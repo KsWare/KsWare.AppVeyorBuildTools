@@ -44,9 +44,7 @@ function Import-AppVeyorModules {
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
 		Import-Module -Name $destinationPath
 
-        $cmdlets = Get-Command -Module $ModuleName | Where-Object { $_.CommandType -eq 'Cmdlet' }
-        $formattedCmdlets = $cmdlets | ForEach-Object { "    $($_.Name)" } -join "`n"
-        Write-Verbose $formattedCmdlets
+        Write-Verbose (($cmdlets = Get-Command -Module $ModuleName | Where-Object { $_.CommandType -eq 'Cmdlet' }) | ForEach-Object { "    $($_.Name)" } -join "`n")
     }
     Write-Verbose "$($script:moduleNames.Count) modules imported"
     $env:MODULE_PATH=$destinationDir
