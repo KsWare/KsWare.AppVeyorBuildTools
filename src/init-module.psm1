@@ -47,7 +47,7 @@ function Import-AppVeyorModules {
         $cmdlets = Get-Command -Module $ModuleName | Where-Object { $_.CommandType -eq 'Cmdlet' }
         Write-Verbose ($cmdlets | ForEach-Object { "    $_.Name" } -join " ")
     }
-    Write-Verbose "$($script:moduleNames.Count) modules imported")
+    Write-Verbose "$($script:moduleNames.Count) modules imported"
     $env:MODULE_PATH=$destinationDir
 }
 
