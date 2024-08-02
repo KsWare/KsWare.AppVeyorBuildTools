@@ -2,7 +2,7 @@ function Import-AppVeyorModules {
     [CmdletBinding()]
     param (
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
-        [Parameter(Position=1, Mandatory=$true)][string]$bestinationDir
+        [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
 
     # Define the names of the modules to download
@@ -21,6 +21,7 @@ function Import-AppVeyorModules {
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
 		Import-Module -Name $destinationPath
     }
+    $env:MODULE_PATH=$destinationDir
 }
 
 Export-ModuleMember -Function Import-AppVeyorModules
