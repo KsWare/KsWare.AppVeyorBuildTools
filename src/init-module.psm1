@@ -64,5 +64,5 @@ function Get-Env-AppVeyor {
 
 Export-ModuleMember -Function Import-AppVeyorModules
 Export-ModuleMember -Function Initialize-AppVeyor
-Export-ModuleMember -Function Get-Env
-Export-ModuleMember -Function Get-Env-AppVeyor
+#Export-ModuleMember -Function Get-Env
+#Export-ModuleMember -Function Get-Env-AppVeyor
