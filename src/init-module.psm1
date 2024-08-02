@@ -1,4 +1,22 @@
-function Import-AppVeyorModules {
+
+# Init AppVeyor API request 
+function InitAppVeyorApiRequest {    
+    $env:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
+    $env:AppveyorApiRequestHeaders = @{
+      "Authorization" = "Bearer $env:AppVeyorApiToken"
+      "Content-type" = "application/json"
+      "Accept" = "application/json"
+    }
+}
+
+# Detect PR   
+function DetectPR {
+    if($env:APPVEYOR_PULL_REQUEST_NUMBER -match "^\d+$") {$isPR=$true} else {$isPR=$false}
+    $env:isPR = $isPR
+    Write-Output "isPR: $isPR"
+} 
+
+function Init-AppVeyor {
     [CmdletBinding()]
     param (
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
@@ -22,6 +40,9 @@ function Import-AppVeyorModules {
 		Import-Module -Name $destinationPath
     }
     $env:MODULE_PATH=$destinationDir
+
+    InitAppVeyorApiRequest
+    DetectPR
 }
 
-Export-ModuleMember -Function Import-AppVeyorModules
+Export-ModuleMember -Function Init-AppVeyor
