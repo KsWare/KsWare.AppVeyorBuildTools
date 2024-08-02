@@ -16,7 +16,7 @@ function DetectPR {
     Write-Output "isPR: $isPR"
 } 
 
-function Init-AppVeyor {
+function Import-AppVeyorModules {
     [CmdletBinding()]
     param (
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
@@ -41,8 +41,15 @@ function Init-AppVeyor {
     }
     $env:MODULE_PATH=$destinationDir
 
+
+}
+
+function Initialize-AppVeyor {
+    [CmdletBinding()] param ()
+
     InitAppVeyorApiRequest
     DetectPR
 }
 
-Export-ModuleMember -Function Init-AppVeyor
+Export-ModuleMember -Function Import-AppVeyorModules
+Export-ModuleMember -Function Initialize-AppVeyor
