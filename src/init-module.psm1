@@ -58,7 +58,7 @@ function Get-Env {
 }
 
 # lists the environment variables whose names begin with APPVEYOR_.
-function Get-Env-AppVeyor {
+function Get-EnvAppVeyor {
     [CmdletBinding()] param ()
 
     Get-ChildItem Env: | Where-Object { $_.Name -like 'APPVEYOR_*' }
@@ -66,5 +66,5 @@ function Get-Env-AppVeyor {
 
 Export-ModuleMember -Function Import-AppVeyorModules
 Export-ModuleMember -Function Initialize-AppVeyor
-#Export-ModuleMember -Function Get-Env
-Export-ModuleMember -Function Get-Env-AppVeyor
+Export-ModuleMember -Function Get-Env
+Export-ModuleMember -Function Get-EnvAppVeyor
