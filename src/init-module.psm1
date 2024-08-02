@@ -52,11 +52,13 @@ function Initialize-AppVeyor {
 }
 
 function Get-Env {
+    [CmdletBinding()] param ()
     Get-ChildItem Env:
 }
 
 # lists the environment variables whose names begin with APPVEYOR_.
 function Get-Env-AppVeyor {
+    [CmdletBinding()] param ()
     Get-ChildItem Env: | Where-Object { $_.Name -like 'APPVEYOR_*' }
 }
 
