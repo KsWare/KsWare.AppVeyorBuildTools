@@ -64,7 +64,4 @@ function Get-EnvAppVeyor {
     Get-ChildItem Env: | Where-Object { $_.Name -like 'APPVEYOR_*' }
 }
 
-Export-ModuleMember -Function Import-AppVeyorModules
-Export-ModuleMember -Function Initialize-AppVeyor
-Export-ModuleMember -Function Get-Env
-Export-ModuleMember -Function Get-EnvAppVeyor
+Export-ModuleMember -Function Import-AppVeyorModules, Initialize-AppVeyor, Get-Env, Get-EnvAppVeyor
