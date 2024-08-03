@@ -54,21 +54,21 @@ function Import-AppVeyorModules {
             $modulePath = Join-Path -Path $destinationDir -ChildPath "$moduleName.psm1"
 		    Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath
         
-		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
+		    Import-Module -Name $modulePath -Force -Scope Global -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."    
 
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
                 Write-Verbose "  Module '$modulePath' loaded as '$($module.Name)'."
             } else {
-                Write-Error "  Module path '$modulePath' not found."
+                Write-Warning "  Module path '$modulePath' not found."
             }
             
             $module = Get-Module -Name $moduleName
             if ($module) {
                 Write-Verbose "  Module '$moduleName' found."
             } else {
-                Write-Error "  Module '$moduleName'not found."
+                Write-Warning "  Module '$moduleName'not found."
             }
 
             $functions = Get-Command -Module $moduleName -CommandType Function
