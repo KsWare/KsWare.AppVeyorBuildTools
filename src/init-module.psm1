@@ -71,8 +71,14 @@ function Import-AppVeyorModules {
             foreach ($function in $functions) { Write-Verbose "    $($function.Name)" }
 
             $cmdlets = Get-Command -Module $moduleName -CommandType Cmdlet
-            foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
             Write-Verbose "  $($cmdlets.Count) Cmdlet imported."
+            foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
+
+            Write-Verbose "  Objects:"
+            Get-Command -Module $moduleName | ForEach-Object {
+                Write-Verbose "  $($_.Name), CommandType: $($_.CommandType)"
+            }
+
         } catch {
             Write-Error "ERROR: Something went wrong when importing the module '$moduleName'.`n$_"
         }
