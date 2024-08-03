@@ -45,8 +45,8 @@ function Import-AppVeyorModules {
     foreach ($moduleName in $script:moduleNames) {
         try {
             Write-Verbose "  Import: $moduleName"
-            $moduleUrl = "$baseUrl/$moduleName"
-            $modulePath = Join-Path -Path $destinationDir -ChildPath $moduleName
+            $moduleUrl = "$baseUrl/$moduleName.psm1"
+            $modulePath = Join-Path -Path $destinationDir -ChildPath "$moduleName.psm1"
 		    Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath
         
 		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
