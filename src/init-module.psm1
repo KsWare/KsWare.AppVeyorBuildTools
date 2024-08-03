@@ -31,6 +31,11 @@ function Import-AppVeyorModules {
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
         [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
+
+    $PSVersionTable.PSVersion
+    Get-ExecutionPolicy
+    Write-Error "STOP"
+
     Write-Verbose "Import-AppVeyorModules: $baseUrl $destinationDir"
 
     if ($env:PSModulePath -notlike "*$destinationDir*") {
