@@ -31,10 +31,12 @@ function Import-AppVeyorModules {
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
         [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
-    Write-Verbose $env:PSModulePath
-    Write-Error "STOP"
-
+    Write-Warning ("TEST")
     Write-Verbose "Import-AppVeyorModules: $baseUrl $destinationDir"
+
+    if ($env:PSModulePath -notlike "*$destinationDir*") {
+        Write-Warning "The directory '$destinationDir' is not in the module path."
+    }
 
     if (-not (Test-Path -Path $destinationDir)) {
         New-Item -ItemType Directory -Path $destinationDir -Force
@@ -55,20 +57,20 @@ function Import-AppVeyorModules {
 		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."        
 
-            $module = Get-Module -Name $modulePath
+            $module = Get-Module -Name $moduleName 
             if ($module) {
                 Write-Verbose "  Module $moduleName is loaded."
             } else {
                 Write-Verbose "  Module $moduleName is not loaded."
             }
 
-            $functions = Get-Command -Module $modulePath -CommandType Function
+            $functions = Get-Command -Module $moduleName -CommandType Function
             Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
             foreach ($function in $functions) {
                 Write-Verbose "    $($function.Name)"
             }
 
-            $cmdlets = Get-Command -Module $modulePath
+            $cmdlets = Get-Command -Module $moduleName -CommandType Cmdlet
             foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
             Write-Verbose "  $($cmdlets.Count) functions imported."
         } catch {
