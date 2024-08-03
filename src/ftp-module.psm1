@@ -70,4 +70,9 @@ function Publish-ToFTP {
 	}
 }
 
-Export-ModuleMember -Function Publish-ToFTP
+function Test-FtpModule {
+	[CmdletBinding()] param ()
+	Write-Warning("Test-FtpModule OK")
+}
+
+Export-ModuleMember -Function Publish-ToFTP, Test-FtpModule
