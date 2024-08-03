@@ -53,7 +53,12 @@ function Import-AppVeyorModules {
             #Write-Verbose $content
         
 		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
-            Write-Verbose "Module '$moduleName' imported successfully."        
+            Write-Verbose "Module '$moduleName' imported successfully."    
+            
+            Write-Verbose "  All modules:"
+            Get-Module -All | ForEach-Object {
+                Write-Verbose "  * $($_.Name), Path: $($_.Path)"
+            }
 
             $module = Get-Module -Name $moduleName 
             if ($module) {
@@ -61,12 +66,7 @@ function Import-AppVeyorModules {
             } else {
                 Write-Verbose "  Get-Module $moduleName failed"
             }
-            $module = Get-Module -Name $modulePath
-            if ($module) {
-                Write-Verbose "  Module $($module.Name) is loaded."
-            } else {
-                Write-Verbose "  Get-Module $modulePath failed"
-            }
+
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
                 Write-Verbose "  Module $($module.Name) is loaded."
