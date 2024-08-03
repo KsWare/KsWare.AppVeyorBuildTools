@@ -9,7 +9,7 @@ function Import-SubModule {
     Test-SubModuleCmdlet -TestParam $TestParam
     #OK bis hier
 
-    Import-Module -Name .\..\src\ftp-module.psm1 -Force -Verbose
+    Import-Module -Name Join-Path $scriptDir '..\src\ftp-module.psm1' -Force -Verbose
     Test-FtpModule
 }
 
