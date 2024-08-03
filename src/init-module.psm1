@@ -52,6 +52,15 @@ function Import-AppVeyorModules {
 		    Import-Module -Name $modulePath -Force -Scope Global -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."    
 
+            # Überprüfen, ob die Funktionen im globalen Scope verfügbar sind
+            $functions = Get-Command -Module $moduleName -CommandType Function
+            foreach ($function in $functions) {
+                if (-not (Get-Command -Name $function.Name -ErrorAction SilentlyContinue)) {
+                    Write-Verbose "Making function $($function.Name) available in the global scope."
+                    Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
+                }
+            }
+
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
                 Write-Verbose "  Module '$modulePath' loaded as '$($module.Name)'."
