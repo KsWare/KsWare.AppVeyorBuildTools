@@ -42,7 +42,7 @@ function Import-AppVeyorModules {
         $moduleUrl = "$baseUrl/$moduleName"
         $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
-		Import-Module -Name $destinationPath -Verbose
+		Import-Module -Name $destinationPath -Force -Verbose
 
         $module = Get-Module -Name $moduleName
         if ($module) {
