@@ -57,6 +57,12 @@ function Import-AppVeyorModules {
             Write-Verbose "  Module $moduleName is not loaded."
         }
 
+        $functions = Get-Command -Module $moduleName -CommandType Function
+        Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
+        foreach ($function in $functions) {
+            Write-Verbose "    $($function.Name)"
+        }
+
         $cmdlets = Get-Command -Module $moduleName
         foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
         Write-Verbose "    $($cmdlets.Count) functions imported."
