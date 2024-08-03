@@ -1,9 +1,9 @@
 
 # Define the names of the modules to download
 $script:moduleNames = @(
-    "ftp-module.psm1",
-    "version-module.psm1",
-    "common-module.psm1"
+    "ftp-module",
+    "version-module",
+    "common-module"
 )
 Write-Verbose "Modules: $script:moduleNames"
 
@@ -58,19 +58,17 @@ function Import-AppVeyorModules {
             } else {
                 Write-Error "  Module path '$modulePath' not found."
             }
-            $name = [System.IO.Path]::GetFileNameWithoutExtension($moduleName)
-            $module = Get-Module -Name $name
+            
+            $module = Get-Module -Name $moduleName
             if ($module) {
-                Write-Verbose "  Module $($module.Name) found."
+                Write-Verbose "  Module '$moduleName' found."
             } else {
-                Write-Error "  Module path $modulePath not found."
+                Write-Error "  Module '$moduleName'not found."
             }
 
-            $functions = Get-Command -Module $name -CommandType Function
+            $functions = Get-Command -Module $moduleName -CommandType Function
             Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
-            foreach ($function in $functions) {
-                Write-Verbose "    $($function.Name)"
-            }
+            foreach ($function in $functions) { Write-Verbose "    $($function.Name)" }
 
             $cmdlets = Get-Command -Module $moduleName -CommandType Cmdlet
             foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
