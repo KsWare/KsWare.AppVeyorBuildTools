@@ -44,6 +44,13 @@ function Import-AppVeyorModules {
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
 		Import-Module -Name $destinationPath
 
+        $module = Get-Module -Name $moduleName
+        if ($module) {
+            Write-Verbose "  Module $moduleName is loaded."
+        } else {
+            Write-Verbose "  Module $moduleName is not loaded."
+        }
+
         $cmdlets = Get-Command -Module $moduleName
         foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
         Write-Verbose "    $($cmdlets.Count) functions imported."
