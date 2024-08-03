@@ -48,33 +48,25 @@ function Import-AppVeyorModules {
             $moduleUrl = "$baseUrl/$moduleName"
             $modulePath = Join-Path -Path $destinationDir -ChildPath $moduleName
 		    Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath
-            #$content = Get-Content -Path $modulePath -Raw
-            #Write-Verbose "  Content of the module file:"
-            #Write-Verbose $content
         
 		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."    
-            
-            Write-Verbose "  All modules:"
-            Get-Module -All | ForEach-Object {
-                Write-Verbose "  * $($_.Name), Path: $($_.Path)"
-            }
-
-            $module = Get-Module -Name $moduleName 
-            if ($module) {
-                Write-Verbose "  Module $($module.Name) is loaded."
-            } else {
-                Write-Verbose "  Get-Module $moduleName failed"
-            }
 
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
-                Write-Verbose "  Module $($module.Name) is loaded."
+                Write-Verbose "  Module '$modulePath' loaded as '$($module.Name)'."
             } else {
-                Write-Verbose "  Module path $modulePath not found."
+                Write-Error "  Module path '$modulePath' not found."
+            }
+            $name = [System.IO.Path]::GetFileNameWithoutExtension($moduleName)
+            $module = Get-Module -Name $name
+            if ($module) {
+                Write-Verbose "  Module $($module.Name) found."
+            } else {
+                Write-Error "  Module path $modulePath not found."
             }
 
-            $functions = Get-Command -Module $moduleName -CommandType Function
+            $functions = Get-Command -Module $name -CommandType Function
             Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
             foreach ($function in $functions) {
                 Write-Verbose "    $($function.Name)"
@@ -82,7 +74,7 @@ function Import-AppVeyorModules {
 
             $cmdlets = Get-Command -Module $moduleName -CommandType Cmdlet
             foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
-            Write-Verbose "  $($cmdlets.Count) functions imported."
+            Write-Verbose "  $($cmdlets.Count) Cmdlet imported."
         } catch {
             Write-Error "ERROR: Something went wrong when importing the module '$moduleName'.`n$_"
         }
