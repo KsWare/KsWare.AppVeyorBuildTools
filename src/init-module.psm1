@@ -42,7 +42,13 @@ function Import-AppVeyorModules {
         $moduleUrl = "$baseUrl/$moduleName"
         $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
-		Import-Module -Name $destinationPath -Force -Verbose
+        try {
+		    Import-Module -Name $destinationPath -Force -Verbose -ErrorAction Stop
+            Write-Verbose "Module '$moduleName' imported successfully."
+        } catch {
+            Write-Verbose "Failed to import module '$moduleName'."
+            Write-Verbose "Error: $_"
+        }
 
         $module = Get-Module -Name $moduleName
         if ($module) {
