@@ -31,7 +31,6 @@ function Import-AppVeyorModules {
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
         [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
-    Write-Warning ("TEST")
     Write-Verbose "Import-AppVeyorModules: $baseUrl $destinationDir"
 
     if ($env:PSModulePath -notlike "*$destinationDir*") {
@@ -57,6 +56,12 @@ function Import-AppVeyorModules {
             Write-Verbose "Module '$moduleName' imported successfully."        
 
             $module = Get-Module -Name $moduleName 
+            if ($module) {
+                Write-Verbose "  Module $moduleName is loaded."
+            } else {
+                Write-Verbose "  Module $moduleName is not loaded."
+            }
+            $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
                 Write-Verbose "  Module $moduleName is loaded."
             } else {
