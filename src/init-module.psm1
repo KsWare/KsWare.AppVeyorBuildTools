@@ -31,6 +31,9 @@ function Import-AppVeyorModules {
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
         [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
+    Write-Verbose $env:PSModulePath
+    Write-Error "STOP"
+
     Write-Verbose "Import-AppVeyorModules: $baseUrl $destinationDir"
 
     if (-not (Test-Path -Path $destinationDir)) {
