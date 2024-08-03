@@ -43,7 +43,7 @@ function Import-AppVeyorModules {
         $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
 		Import-Module -Name $destinationPath
-        foreach ($cmdlet in $cmdlets) {
+        foreach ($cmdlet in Get-Command -Module $moduleName -CommandType Cmdlet) {
             Write-Verbose "  $($cmdlet.Name)"
         }
     }
