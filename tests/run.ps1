@@ -7,3 +7,5 @@ Import-Module -Name $mainModulePath -Force -Verbose
 
 # Aufrufen der Funktion aus dem Hauptmodul
 Import-SubModule -TestParam "Hello from Main Module" -scriptDir $scriptDir
+
+Test-FtpModule
