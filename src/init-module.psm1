@@ -24,6 +24,7 @@ function DetectPR {
     Write-Output "isPR: $isPR"
 } 
 
+# Imports all modules definied in $script:moduleNames
 function Import-AppVeyorModules {
     [CmdletBinding()]
     param (
@@ -41,32 +42,32 @@ function Import-AppVeyorModules {
         try {
             Write-Verbose "  Import: $moduleName"
             $moduleUrl = "$baseUrl/$moduleName"
-            $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
-		    Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
+            $modulePath = Join-Path -Path $destinationDir -ChildPath $moduleName
+		    Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath
 
-            $content = Get-Content -Path $destinationPath -Raw
+            $content = Get-Content -Path $modulePath -Raw
             Write-Verbose "  Content of the module file:"
             Write-Verbose $content
         
-		    Import-Module -Name $destinationPath -Force -Verbose -ErrorAction Stop
+		    Import-Module -Name $modulePath -Force -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."        
 
-            $module = Get-Module -Name $moduleName
+            $module = Get-Module -Name $modulePath
             if ($module) {
                 Write-Verbose "  Module $moduleName is loaded."
             } else {
                 Write-Verbose "  Module $moduleName is not loaded."
             }
 
-            $functions = Get-Command -Module $moduleName -CommandType Function
+            $functions = Get-Command -Module $modulePath -CommandType Function
             Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
             foreach ($function in $functions) {
                 Write-Verbose "    $($function.Name)"
             }
 
-            $cmdlets = Get-Command -Module $moduleName
+            $cmdlets = Get-Command -Module $modulePath
             foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
-            Write-Verbose "    $($cmdlets.Count) functions imported."
+            Write-Verbose "  $($cmdlets.Count) functions imported."
         } catch {
             Write-Error "Failed to import module '$moduleName'."
             Write-Error "Error: $_"
