@@ -38,13 +38,14 @@ function Import-AppVeyorModules {
 
     # Download and import each module
     foreach ($moduleName in $script:moduleNames) {
-        Write-Verbose "import: $moduleName"
+        Write-Verbose "Import: $moduleName"
         $moduleUrl = "$baseUrl/$moduleName"
         $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
 		Import-Module -Name $destinationPath
-
-        Get-Command -Module $ModuleName -CommandType Cmdlet | ForEach-Object { Write-Verbose "  $($_.Name)" }
+        foreach ($cmdlet in $cmdlets) {
+            Write-Verbose "  $($cmdlet.Name)"
+        }
     }
     Write-Verbose "$($script:moduleNames.Count) modules imported"
     $env:MODULE_PATH=$destinationDir
