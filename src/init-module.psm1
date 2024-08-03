@@ -69,8 +69,7 @@ function Import-AppVeyorModules {
             foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
             Write-Verbose "  $($cmdlets.Count) functions imported."
         } catch {
-            Write-Error "Failed to import module '$moduleName'."
-            Write-Error "Error: $_"
+            Write-Error "ERROR: Something went wrong when importing the module '$moduleName'.`n$_"
         }
     }
     Write-Verbose "  $($script:moduleNames.Count) modules imported"
