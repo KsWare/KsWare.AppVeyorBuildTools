@@ -38,34 +38,36 @@ function Import-AppVeyorModules {
 
     # Download and import each module
     foreach ($moduleName in $script:moduleNames) {
-        Write-Verbose "  Import: $moduleName"
-        $moduleUrl = "$baseUrl/$moduleName"
-        $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
-		Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
         try {
+            Write-Verbose "  Import: $moduleName"
+            $moduleUrl = "$baseUrl/$moduleName"
+            $destinationPath = Join-Path -Path $destinationDir -ChildPath $moduleName
+		    Invoke-WebRequest -Uri $moduleUrl -OutFile $destinationPath
+        
 		    Import-Module -Name $destinationPath -Force -Verbose -ErrorAction Stop
             Write-Verbose "Module '$moduleName' imported successfully."
+        
+
+            $module = Get-Module -Name $moduleName
+            if ($module) {
+                Write-Verbose "  Module $moduleName is loaded."
+            } else {
+                Write-Verbose "  Module $moduleName is not loaded."
+            }
+
+            $functions = Get-Command -Module $moduleName -CommandType Function
+            Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
+            foreach ($function in $functions) {
+                Write-Verbose "    $($function.Name)"
+            }
+
+            $cmdlets = Get-Command -Module $moduleName
+            foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
+            Write-Verbose "    $($cmdlets.Count) functions imported."
         } catch {
-            Write-Verbose "Failed to import module '$moduleName'."
-            Write-Verbose "Error: $_"
+            Write-Error "Failed to import module '$moduleName'."
+            Write-Error "Error: $_"
         }
-
-        $module = Get-Module -Name $moduleName
-        if ($module) {
-            Write-Verbose "  Module $moduleName is loaded."
-        } else {
-            Write-Verbose "  Module $moduleName is not loaded."
-        }
-
-        $functions = Get-Command -Module $moduleName -CommandType Function
-        Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
-        foreach ($function in $functions) {
-            Write-Verbose "    $($function.Name)"
-        }
-
-        $cmdlets = Get-Command -Module $moduleName
-        foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
-        Write-Verbose "    $($cmdlets.Count) functions imported."
     }
     Write-Verbose "  $($script:moduleNames.Count) modules imported"
     $env:MODULE_PATH=$destinationDir
