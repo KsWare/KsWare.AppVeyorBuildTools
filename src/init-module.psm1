@@ -57,15 +57,15 @@ function Import-AppVeyorModules {
 
             $module = Get-Module -Name $moduleName 
             if ($module) {
-                Write-Verbose "  Module $moduleName is loaded."
+                Write-Verbose "  Module $($module.Name) is loaded."
             } else {
-                Write-Verbose "  Module $moduleName is not loaded."
+                Write-Verbose "  Module $moduleName not found."
             }
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
             if ($module) {
-                Write-Verbose "  Module $moduleName is loaded."
+                Write-Verbose "  Module $($module.Name) is loaded."
             } else {
-                Write-Verbose "  Module $moduleName is not loaded."
+                Write-Verbose "  Module $moduleName not found."
             }
 
             $functions = Get-Command -Module $moduleName -CommandType Function
