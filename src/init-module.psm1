@@ -24,6 +24,10 @@ function DetectPR {
     Write-Output "isPR: $isPR"
 } 
 
+function Import-ModuleFromUrl {
+
+}
+
 # Imports all modules definied in $script:moduleNames
 function Import-AppVeyorModules {
     [CmdletBinding()]
@@ -31,76 +35,23 @@ function Import-AppVeyorModules {
         [Parameter(Position=0, Mandatory=$true)][string]$baseUrl,
         [Parameter(Position=1, Mandatory=$true)][string]$destinationDir
     )
-    Write-Verbose "Import-AppVeyorModules: $baseUrl $destinationDir"
+    Write-Verbose "Import-AppVeyorModules $baseUrl $destinationDir"
 
     if ($env:PSModulePath -notlike "*$destinationDir*") {
-        Write-Warning "The directory '$destinationDir' is not in the module path."
-    }
+        Write-Warning "The directory '$destinationDir' is not in the module path." }
 
     if (-not (Test-Path -Path $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force
-    }
+        New-Item -ItemType Directory -Path $destinationDir -Force }
 
     # Download and import each module
+    Write-Verbose "Importing $($script:moduleNames.Count) modules"
     foreach ($moduleName in $script:moduleNames) {
-        try {
-            Write-Verbose "  Import: $moduleName"
-            $moduleUrl = "$baseUrl/$moduleName.psm1"
-            $modulePath = Join-Path -Path $destinationDir -ChildPath "$moduleName.psm1"
-		    Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath
-        
-		    Import-Module -Name $modulePath -Force -Scope Global -Verbose -ErrorAction Stop
-            Write-Verbose "Module '$moduleName' imported successfully."    
-
-            # Überprüfen, ob die Funktionen im globalen Scope verfügbar sind
-            $functions = Get-Command -Module $moduleName -CommandType Function
-            Write-Verbose "  $($functions.Count) functions:"
-            foreach ($function in $functions) {
-                Write-Verbose "    $($function.Name)"
-                #if (-not (Get-Command -Name $function.Name -ErrorAction SilentlyContinue)) {
-                #    Write-Verbose "Making function $($function.Name) available in the global scope."
-                #    #Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
-                #    $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
-                #    Invoke-Expression "function global:$($function.Name) $functionScript"
-                #}
-                #$functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
-                #Invoke-Expression "function global:$($function.Name) $functionScript"
-                Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
-            }
-
-            $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
-            if ($module) {
-                Write-Verbose "  Module '$modulePath' loaded as '$($module.Name)'."
-            } else {
-                Write-Warning "  Module path '$modulePath' not found."
-            }
-            
-            $module = Get-Module -Name $moduleName
-            if ($module) {
-                Write-Verbose "  Module '$moduleName' found."
-            } else {
-                Write-Warning "  Module '$moduleName'not found."
-            }
-
-            $functions = Get-Command -Module $moduleName -CommandType Function
-            Write-Verbose "  $($functions.Count) Functions in '$moduleName':"
-            foreach ($function in $functions) { Write-Verbose "    $($function.Name)" }
-
-            $cmdlets = Get-Command -Module $moduleName -CommandType Cmdlet
-            Write-Verbose "  $($cmdlets.Count) Cmdlet imported."
-            foreach ($cmdlet in $cmdlets) { Write-Verbose "    $($cmdlet.Name)"}
-
-            Write-Verbose "  Objects:"
-            Get-Command -Module $moduleName | ForEach-Object {
-                Write-Verbose "  $($_.Name), CommandType: $($_.CommandType)"
-            }
-
-        } catch {
-            Write-Error "ERROR: Something went wrong when importing the module '$moduleName'.`n$_"
-        }
+        Write-Verbose "  Import: $moduleName"
+        $moduleUrl = "$baseUrl/$moduleName.psm1"
+        $modulePath = Join-Path -Path $destinationDir -ChildPath "$moduleName.psm1"
+		Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath -ErrorAction Stop
+		Import-Module -Name $modulePath -Force -Scope Global -Verbose -ErrorAction Stop
     }
-    Write-Verbose "  $($script:moduleNames.Count) modules imported"
-    $env:MODULE_PATH=$destinationDir
 }
 
 function Initialize-AppVeyor {
@@ -110,5 +61,4 @@ function Initialize-AppVeyor {
     DetectPR
 }
 
-Export-ModuleMember -Function Import-AppVeyorModules
-Export-ModuleMember -Function Initialize-AppVeyor
+Export-ModuleMember -Function *-*
