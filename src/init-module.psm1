@@ -54,13 +54,17 @@ function Import-AppVeyorModules {
 
             # Überprüfen, ob die Funktionen im globalen Scope verfügbar sind
             $functions = Get-Command -Module $moduleName -CommandType Function
+            Write-Verbose "  $($functions.Count) functions:"
             foreach ($function in $functions) {
-                if (-not (Get-Command -Name $function.Name -ErrorAction SilentlyContinue)) {
-                    Write-Verbose "Making function $($function.Name) available in the global scope."
-                    #Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
-                    $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
-                    Invoke-Expression "function global:$($function.Name) $functionScript"
-                }
+                Write-Verbose "    $($function.Name)"
+                #if (-not (Get-Command -Name $function.Name -ErrorAction SilentlyContinue)) {
+                #    Write-Verbose "Making function $($function.Name) available in the global scope."
+                #    #Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
+                #    $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
+                #    Invoke-Expression "function global:$($function.Name) $functionScript"
+                #}
+                $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
+                Invoke-Expression "function global:$($function.Name) $functionScript"
             }
 
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
