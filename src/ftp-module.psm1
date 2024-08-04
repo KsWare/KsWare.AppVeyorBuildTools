@@ -1,13 +1,13 @@
-# Function for uploading files
-function Upload-ToFtp {
+# Function for uploading file
+function UploadToFtp {
 	param (
 		[Parameter(Position=0, Mandatory=$true)][string]$localFilePath,
 		[Parameter(Position=1, Mandatory=$true)][string]$ftpFilePath,
 		[Parameter(Position=2, Mandatory=$true)][string]$ftpUser,
 		[Parameter(Position=3, Mandatory=$true)][string]$ftpPassword
 	)
-	 Write-Host "Upload: $localFilePath"
-	 Write-Host "     -> $ftpFilePath"
+	 Write-Verbose "Upload: $localFilePath"
+	 Write-Verbose "     -> $ftpFilePath"
 
 	$webclient = New-Object System.Net.WebClient
 	$webclient.Credentials = New-Object System.Net.NetworkCredential($ftpUser, $ftpPassword)
@@ -15,21 +15,21 @@ function Upload-ToFtp {
 	$uri = New-Object System.Uri($ftpFilePath)
 	try {
 		$webclient.UploadFile($uri, $localFilePath)
-		Write-Host "        OK"
+		Write-Verbose "        OK"
 	} catch {
-		Write-Host "$_"
+		Write-Error "$_"
 		exit 1
 	}
 }
 
 # Function for creating directories on the FTP server
-function Create-FtpDirectory {
+function CreateFtpDirectory {
 	param (
 		[Parameter(Position=0, Mandatory=$true)][string]$path,
 		[Parameter(Position=1, Mandatory=$true)][string]$ftpUser,
 		[Parameter(Position=2, Mandatory=$true)][string]$ftpPassword
 	)
-	Write-Host "MkDir:  $path"
+	Write-Verbose "MkDir:  $path"
 	
 	$ftpRequest = [System.Net.FtpWebRequest]::Create($path)
 	$ftpRequest.Credentials = New-Object System.Net.NetworkCredential($ftpUser, $ftpPassword)
@@ -37,18 +37,36 @@ function Create-FtpDirectory {
 	try {
 		$ftpResponse = $ftpRequest.GetResponse()
 		$ftpResponse.Close()        
-		Write-Host "        OK"
+		Write-Verbose "        OK"
 	} catch [System.Net.WebException] {
 		if ($_.Exception.Response.StatusCode -eq 550) {
-			Write-Host "        ERROR: 550 Verzeichnis existiert möglicherweise bereits"
+			Write-Verbose "        ERROR: 550 Verzeichnis existiert möglicherweise bereits"
 		} else {
-			Write-Host "        ERROR: S($_.Exception.Response.StatusCode)"
+			Write-Error "        ERROR: S($_.Exception.Response.StatusCode)"
 		}
 	}
 }
 
-# Recurse through directories and upload files
-# EXPORT
+
+<#
+.SYNOPSIS
+    Recurse through directories and uploads files
+
+.PARAMETER $localPath
+    path to a local directory
+
+.PARAMETER $ftpPath
+    URL to ftp server including directory
+
+.PARAMETER $ftpUser
+	FTP user name
+
+.PARAMETER $ftpPassword
+	FTP password
+
+.EXAMPLE
+    Publish-ToFTP C:\LocalDir ftp://server.name/remoteDir Foo password
+#>
 function Publish-ToFTP {
 	[CmdletBinding()]
 	param (
@@ -63,9 +81,9 @@ function Publish-ToFTP {
 		$relativePath = $fullName.Substring($localPath.Length + 1).Replace("\", "/")
 		$p = "$ftpPath/$relativePath"
 		if ($_.PSIsContainer) {            
-			Create-FtpDirectory $p $ftpUser $ftpPassword
+			CreateFtpDirectory $p $ftpUser $ftpPassword
 		} else {            
-			Upload-ToFtp $_.FullName $p $ftpUser $ftpPassword
+			UploadToFtp $_.FullName $p $ftpUser $ftpPassword
 		}
 	}
 }
@@ -75,4 +93,4 @@ function Test-FtpModule {
 	Write-Warning("Test-FtpModule OK")
 }
 
-Export-ModuleMember -Function Publish-ToFTP, Test-FtpModule
+Export-ModuleMember -Function *-*
