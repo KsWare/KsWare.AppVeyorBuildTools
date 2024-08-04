@@ -63,8 +63,9 @@ function Import-AppVeyorModules {
                 #    $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
                 #    Invoke-Expression "function global:$($function.Name) $functionScript"
                 #}
-                $functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
-                Invoke-Expression "function global:$($function.Name) $functionScript"
+                #$functionScript = (Get-Command $function.Name).ScriptBlock.ToString()
+                #Invoke-Expression "function global:$($function.Name) $functionScript"
+                Set-Item -Path "function:\global:$($function.Name)" -Value $function.ScriptBlock
             }
 
             $module = Get-Module | Where-Object { $_.Path -eq $modulePath }
