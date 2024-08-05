@@ -39,6 +39,7 @@ function Get-VersionFromFile {
     Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
+    
     foreach ($line in $fileContent) {
         if ($line -match $versionPattern) {
             $env:NewVersion = $matches['version']
@@ -46,6 +47,7 @@ function Get-VersionFromFile {
         }
     }    	
     if(-not ($newVersion)) {
+        Write-Verbose "$fileContent"
         Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
         Exit-AppveyorBuild
     }	
