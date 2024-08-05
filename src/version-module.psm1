@@ -89,12 +89,13 @@ function Update-AppVeyorSettings {
     $response = Invoke-RestMethod -Method Put -Uri "$env:AppVeyorApiUrl/projects" -Headers $env:AppVeyorApiRequestHeaders -Body $body
 }
 
+# Enhance build version with timestamp
 function Update-VersionWithTimestamp {
     [CmdletBinding()]param ()
-    # Enhance build version with timestamp
-    if (-not $env:version_meta) {
-        $env:version_meta = "+$(Get-Date -Format 'yyyyMMddHHmmss')" }
-    Update-AppveyorBuild -Version "$ENV:APPVEYOR_BUILD_VERSION$meta"
+    
+    if (-not $env:versionMeta) {
+        $env:versionMeta = "+$(Get-Date -Format 'yyyyMMddHHmmss')" }
+    Update-AppveyorBuild -Version "$ENV:APPVEYOR_BUILD_VERSION$env:versionSuffix$env:versionMeta"
     Write-Output "env:APPVEYOR_BUILD_VERSION: $ENV:APPVEYOR_BUILD_VERSION"
 }
 
