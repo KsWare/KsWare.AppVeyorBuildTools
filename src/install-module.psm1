@@ -7,4 +7,11 @@ function Install-ClickOnceCerticate {
     Import-PfxCertificate -FilePath "$env:APPVEYOR_BUILD_FOLDER\$certFile" -CertStoreLocation Cert:\CurrentUser\My -Password $plainPassword -Exportable
 }
 
+function Clone-Repository {
+    [CmdletBinding()] param ()
+
+    git clone -q --branch=$env:APPVEYOR_REPO_BRANCH $env:APPVEYOR_REPO_URL $env:APPVEYOR_BUILD_FOLDER
+    git checkout -qf $env:APPVEYOR_REPO_COMMIT
+}
+
 Export-ModuleMember -Function *-*

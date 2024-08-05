@@ -1,6 +1,7 @@
 
 # Init AppVeyor API request 
 function Init-AppVeyorApiRequest {
+    Write-Verbose "Init-AppVeyorApiRequest"
 	$env:AppveyorApiUrl = 'https://ci.appveyor.com/api'
 	$env:AppveyorApiRequestHeaders = @{
 		"Authorization" = "Bearer $env:AppVeyorApiToken"
@@ -9,7 +10,8 @@ function Init-AppVeyorApiRequest {
 	}
 }
 
-function Read-AppveyorSettings {
+function Read-AppVeyorSettings {
+    Write-Verbose "Read-AppVeyorSettings"
     # Read Settings
     if($isPR -eq $false) {
         $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $appveyorApiRequestHeaders
@@ -31,7 +33,9 @@ function Extract-VersionsFormat {
 
 # Get new version from file
 function Get-VersionFromFile {
+    Write-Verbose "Get-VersionFromFile"
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
+
     
     Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
@@ -58,6 +62,7 @@ function Get-VersionFromFile {
 }
 
 function Test-NewVersionIsCreater {
+    Write-Verbose "Test-NewVersionIsCreater"
     $currentVersionSegments = $env:buildVersion.Split(".")
     $newVersionSegments = $env:newVersion.Split(".")
 
@@ -69,6 +74,7 @@ function Test-NewVersionIsCreater {
 }
 
 function Reset-BuildNumber {
+    Write-Verbose "Reset-BuildNumber"
     if(-not $env:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
     if(-not $env:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 

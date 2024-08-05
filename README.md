@@ -4,7 +4,7 @@ A set of cmdlets to use in AppVeyor CI.
 
 ## How to use
 
-### 1. Bootstrapper - getting more cmdlets
+### 1. Bootstrapper - getting cmdlets
 
 (global-)appveyor.yml:
 ```yaml
@@ -55,7 +55,7 @@ Initializes the `$env:isPR` variable
 
 ### Update-VersionWithTimestamp
 
-initializes `$enc:version_meta` with current timestamp  
+initializes `$env:versionMeta` with current timestamp  
 updates AppVeyor and `$env:APPVEYOR_BUILD_VERSION`
 
 Used to create unique numbers for each buid, so it s not needed to increment the build number if the build failed.
@@ -77,4 +77,15 @@ Publishes all files from a directory to a ftp server
 
 ### Reset-BuildNumber
 
+## Environment Variables
+
+Name | Description
+---- | ---
+`isPR` | $true if current build is a pull request; else $false
+`BuildVersion` | "VersionPrefix" e.g. "1.2.3" (from 1.2.3.999)
+`BuildNumber` | Auto incremented build number
+`VersionSuffix` | Version suffix e.g. "-pre" or "-beta"
+`VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
+`AppVeyorApiUrl` | https://ci.appveyor.com/api
+`AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
 
