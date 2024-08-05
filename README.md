@@ -25,10 +25,11 @@ init:
 
 Name | Description
 --- | ---
-Import-AppVeyorModules |
-Initialize-AppVeyor | 
+[Import-AppVeyorModules](###Import-AppVeyorModules) |
+[Initialize-AppVeyor](###Initialize-AppVeyor) | 
 [Update-Version](###Update-Version) | 
 [Publish-ToFTP](###Publish-ToFTP) | 
+[Reset-BuildNumber](###Reset-BuildNumber) | 
 
 ### Import-AppVeyorModules
 
@@ -52,6 +53,14 @@ Initializes the `$env:AppVeyorApiUrl` and `$env:AppveyorApiRequestHeaders` varia
 
 Initializes the `$env:isPR` variable
 
+### Update-VersionWithTimestamp
+
+initializes `$enc:version_meta` with current timestamp  
+updates AppVeyor and `$env:APPVEYOR_BUILD_VERSION`
+
+Used to create unique numbers for each buid, so it s not needed to increment the build number if the build failed.
+Use `Reset-BuildNumber` in `on_failure` script
+
 ### Update-Version
 
 ```yaml
@@ -65,3 +74,7 @@ Publishes all files from a directory to a ftp server
 ```yaml
 
 ```
+
+### Reset-BuildNumber
+
+
