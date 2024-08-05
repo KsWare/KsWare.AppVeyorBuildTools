@@ -9,12 +9,7 @@ A set of cmdlets to use in AppVeyor CI.
 (global-)appveyor.yml:
 ```yaml
 init:
-- ps: |-
-    $modulesUrl = "https://raw.githubusercontent.com/KsWare/KsWare.AppVeyorBuildTools/develop/src"
-    $userModulesPath = ($env:PSModulePath -split ';' | Where-Object { $_ -like "$env:USERPROFILE\*" })[0]   
-    Invoke-WebRequest -Uri "$modulesUrl/init-module.psm1" -OutFile  (Join-Path $modulesPath "init-module.psm1")
-    Import-Module (Join-Path $modulesPath "init-module.psm1")
-    Import-AppVeyorModules $modulesUrl $userModulesPath
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/KsWare/KsWare.AppVeyorBuildTools/develop/src/init.ps1'))
 ```
 This will download and import all other useful cmdlets.
 
@@ -40,6 +35,22 @@ Initialize-AppVeyor |
 Import-AppVeyorModules will download und import all other AppVeyor cmdlets.
 
 ### Initialize-AppVeyor
+
+#### 1. InitAppVeyorApiRequest
+
+Initializes the `$env:AppVeyorApiUrl` and `$env:AppveyorApiRequestHeaders` variable
+
+```powershell
+   $env:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
+   $env:AppveyorApiRequestHeaders = @{
+      "Authorization" = "Bearer $env:AppVeyorApiToken"
+      "Content-type" = "application/json"
+      "Accept" = "application/json"
+    }
+```
+#### 2. DetectPR
+
+Initializes the `$env:isPR` variable
 
 ### Update-Version
 

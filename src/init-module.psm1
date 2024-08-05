@@ -3,6 +3,8 @@
 $script:moduleNames = @(
     "ftp-module",
     "version-module",
+    "install-module",
+    "build-module",
     "common-module"
 )
 Write-Verbose "Modules: $script:moduleNames"

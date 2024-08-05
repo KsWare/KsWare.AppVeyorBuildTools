@@ -89,22 +89,27 @@ function Update-AppVeyorSettings {
     $response = Invoke-RestMethod -Method Put -Uri "$env:AppVeyorApiUrl/projects" -Headers $env:AppVeyorApiRequestHeaders -Body $body
 }
 
+function Update-VersionWithTimestamp {
+    [CmdletBinding()]param ()
+    # Enhance build version with timestamp
+    if (-not $env:version_meta) {
+        $env:version_meta = "+$(Get-Date -Format 'yyyyMMddHHmmss')" }
+    Update-AppveyorBuild -Version "$ENV:APPVEYOR_BUILD_VERSION$meta"
+    Write-Output "env:APPVEYOR_BUILD_VERSION: $ENV:APPVEYOR_BUILD_VERSION"
+}
+
 function Update-Version {
 	[CmdletBinding()]param ()
     try {
-	    Write-Output "START: Update-Version()"
+	    Write-Output "START: Update-Version"
 	    Write-Output "isPR: $env:isPR"
 
         if($env:isPR -eq $true) { 
-            Write-Output "A"
             Extract-VersionsFormat
             Write-Output ("INFO: Pull Request detected. skip Update-Version.")
         }
         else {
-            Write-Output "B"
-            $isPR = $env:isPR
-	        Write-Output "env:VersionFile: $env:VersionFile"
-	
+	        Write-Output "env:VersionFile: $env:VersionFile"	
             Init-AppVeyorApiRequest 	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
@@ -119,13 +124,14 @@ function Update-Version {
         Write-Output "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
 	    Write-Output "env:buildVersion: $env:buildVersion"
 	    Write-Output "env:buildNumber: $env:buildNumber"
-	    Write-Output "END: Update-Version()"
     }
     catch {
         Write-Output "ERROR: $($_.Exception.Message)"
         Write-Output "ERROR: $($_.Exception.StackTrace)"
         exit 1
+    } finalize {
+        Write-Output "END: Update-Version"
     }
 }
 
-Export-ModuleMember -Function Update-Version
+Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp
