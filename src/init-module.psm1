@@ -83,7 +83,7 @@ function Import-AppVeyorModules {
         $moduleUrl = "$baseUrl/$moduleName.psm1"
         $modulePath = Join-Path -Path $destinationDir -ChildPath "$moduleName.psm1"
 		Invoke-WebRequest -Uri $moduleUrl -OutFile $modulePath -ErrorAction Stop
-		Import-Module -Name $modulePath -Force -Scope Global -ErrorAction Stop
+		Import-Module -Name $modulePath -Force -Scope Global -DisableNameChecking -ErrorAction Stop
     }
 }
 
