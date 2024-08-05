@@ -63,7 +63,7 @@ function Get-VersionFromFile {
     return $env:NewVersion
 }
 
-function Test-NewVersionIsCreater {
+function Test-NewVersionIsGreater {
     Write-Verbose "Test-NewVersionIsCreater"
     $currentVersionSegments = $env:buildVersion.Split(".")
     $newVersionSegments = $env:newVersion.Split(".")
