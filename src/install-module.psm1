@@ -10,7 +10,7 @@ function Install-ClickOnceCerticate {
 function Clone-Repository {
     [CmdletBinding()] param ()
 
-    git clone -q --branch=$env:APPVEYOR_REPO_BRANCH $env:APPVEYOR_REPO_URL $env:APPVEYOR_BUILD_FOLDER
+    git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_URL.git $env:APPVEYOR_BUILD_FOLDER
     git checkout -qf $env:APPVEYOR_REPO_COMMIT
 }
 

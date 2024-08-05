@@ -35,7 +35,6 @@ function Extract-VersionsFormat {
 function Get-VersionFromFile {
     Write-Verbose "Get-VersionFromFile"
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
-
     
     Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
