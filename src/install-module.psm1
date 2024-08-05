@@ -14,7 +14,7 @@ function Clone-Repository {
     # APPVEYOR_REPO_SCM              git          
     if($env:APPVEYOR_REPO_PROVIDER -eq "gitHub") {
         git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
-        git checkout -qf $env:APPVEYOR_REPO_COMMIT"
+        git checkout -qf $env:APPVEYOR_REPO_COMMIT
     } else {
         Write-Error "Sorry, repo type '$env:APPVEYOR_REPO_PROVIDER' is not supported."
     }
