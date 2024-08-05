@@ -38,6 +38,7 @@ function Get-VersionFromFile {
     
     Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
+    #                 "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
     foreach ($line in $fileContent) {
@@ -46,12 +47,12 @@ function Get-VersionFromFile {
             break
         }
     }    	
-    if(-not ($newVersion)) {
+    if(-not ($env:NewVersion)) {
         Write-Verbose "$fileContent"
         Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
         Exit-AppveyorBuild
     }	
-    $newVersionSegments = $newVersion.Split(".")	
+    $newVersionSegments = $env:newVersion.Split(".")	
     if($newVersionSegments.Count+1 -ne $env:VersionSegmentCount) {
         $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
         Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
