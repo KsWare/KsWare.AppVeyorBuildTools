@@ -38,12 +38,12 @@ function Get-VersionFromFile {
     
     Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
-    #                 "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
     foreach ($line in $fileContent) {
         if ($line -match $versionPattern) {
-            $env:NewVersion = $matches['version']
+            $newVersion = $matches['version']
+            Write-Verbose "New version found: '$newVersion' in line '$line'"
             break
         }
     }    	
@@ -59,14 +59,14 @@ function Get-VersionFromFile {
         Exit-AppveyorBuild
     }
 
-    Write-Output "New version: ""$env:NewVersion.*"" / $($newVersionSegments.Count+1) parts"	
-    return $env:NewVersion
+    Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"	
+    return $newVersion
 }
 
 function Test-NewVersionIsGreater {
     Write-Verbose "Test-NewVersionIsCreater"
     $currentVersionSegments = $env:buildVersion.Split(".")
-    $newVersionSegments = $env:newVersion.Split(".")
+    $newVersionSegments = $env:newBuildVersion.Split(".")
 
     for ($i = 0; $i -lt $currentVersionSegments.Length; $i++) {
         if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { return $true } 
@@ -122,10 +122,10 @@ function Update-Version {
             Init-AppVeyorApiRequest 	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
-            $newVersion = Get-VersionFromFile
-            if(-not $newVersion) { return }    
-            $env:buildVersion = $newVersion
+            $env:newBuildVersion = Get-VersionFromFile
+            if(-not $env:newBuildVersion) { return }    
             if(Test-NewVersionIsGreater) { Reset-BuildNumber }
+            $env:buildVersion = $env:newBuildVersion
             Update-AppVeyorSettings
             Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
         }

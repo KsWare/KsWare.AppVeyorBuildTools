@@ -88,4 +88,4 @@ Name | Description
 `VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
 `AppVeyorApiUrl` | https://ci.appveyor.com/api
 `AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
-
+`NewVersion` | new BuildVersion, read from file
