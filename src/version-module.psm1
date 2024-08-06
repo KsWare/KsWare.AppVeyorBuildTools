@@ -98,13 +98,14 @@ function Reset-BuildNumber {
 } 
 
 function Update-AppVeyorSettings {
+    Write-Verbose "Update-AppVeyorSettings"
     if(-not $env:AppVeyorSettings) {throw "env:AppVeyorSettings is empty."}
     if(-not $env:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
     if(-not $env:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 
     $env:AppVeyorSettings.versionFormat = "$env:buildVersion.{build})"
-    Write-Output "Build version format: $($env:AppVeyorSettings.versionFormat)"
-    $body = ConvertTo-Json -Depth 10 -InputObject $settings
+    Write-Host "Build version format: $($env:AppVeyorSettings.versionFormat)"
+    $body = ConvertTo-Json -Depth 10 -InputObject $env:AppVeyorSettings
     $response = Invoke-RestMethod -Method Put -Uri "$env:AppVeyorApiUrl/projects" -Headers $env:AppVeyorApiRequestHeaders -Body $body
 }
 
@@ -163,10 +164,11 @@ function Update-Version {
 # Reset build number
 function Reset-BuildNumber {
 	[CmdletBinding()]param ()
+    Write-Verbose "Reset-BuildNumber"
     if($env:isPR -eq $true) { return } # skip if this is a pull request
     $build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
     $json = $build | ConvertTo-Json    
-    Invoke-RestMethod -Method Put "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $headers
+    Invoke-RestMethod -Method Put "$env:AppveyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $headers
     Write-Output "Next build number: $env:APPVEYOR_BUILD_NUMBER"
 }
 
