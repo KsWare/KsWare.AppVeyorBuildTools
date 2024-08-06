@@ -91,7 +91,7 @@ function Update-AppVeyorSettings {
     if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
     if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 
-    $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build})"
+    $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $env:AppVeyorSettings
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
