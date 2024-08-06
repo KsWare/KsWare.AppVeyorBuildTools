@@ -1,13 +1,18 @@
 function Read-AppVeyorSettings {
     Write-Verbose "Read-AppVeyorSettings"
     # Read Settings
-    if($isPR -eq $false) {
-        $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $global:AppveyorApiRequestHeaders
-        $global:AppVeyorSettings = $response.settings        
+    if($env:isPR -eq $false) {
+        $response = Invoke-RestMethod -Method Get -Uri "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $global:AppveyorApiRequestHeaders
+        $global:AppVeyorSettings = $response.settings
+        Write-Verbose "settings loaded"
     } else {
         # dummy settings
-        $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}        
+        $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}      
+        Write-Verbose "dummy settings created"
     }
+    #$txt = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
+    #Write-Verbose "global:AppVeyorSettings = $txt"
+    WriteVerbose "$global:AppVeyorSettings = {object}"
 }
 
 # Extract version format
@@ -20,9 +25,9 @@ function Extract-VersionsFormat {
    	Write-Host "Current version: $env:buildVersion.* / $($currentVersionSegments.Count) parts"
 }
 
-# Get new version from file
-function Get-VersionFromFile {
-    Write-Verbose "Get-VersionFromFile"
+# Read new version from file
+function Read-VersionFromFile {
+    Write-Verbose "Read-VersionFromFile"
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
     
     Write-Host "Read new version from file"
@@ -51,8 +56,7 @@ function Get-VersionFromFile {
     }
 
     Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
-    Write-Verbose "return $newVersion"
-    return $newVersion
+    $env:newBuildVersion = $newVersion
 }
 
 function Test-NewVersionIsGreater {
@@ -93,7 +97,7 @@ function Update-AppVeyorSettings {
     $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
-    Write-Verbose $body
+    Write-Verbose "body: $body"
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
 
@@ -121,7 +125,7 @@ function Update-Version {
 	        Write-Host "env:VersionFile: $env:VersionFile"	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
-            $env:newBuildVersion = Get-VersionFromFile
+            Read-VersionFromFile
             if(-not $env:newBuildVersion) { return }    
             if(Test-NewVersionIsGreater) { Reset-BuildNumber }
             Write-Verbose "C"
