@@ -97,7 +97,6 @@ function Update-AppVeyorSettings {
     $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
-    Write-Verbose "body: $body"
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
 
@@ -114,8 +113,8 @@ function Update-VersionWithTimestamp {
 function Update-Version {
 	[CmdletBinding()]param ()
     try {
-	    Write-Host "START: Update-Version"
-	    Write-Host "isPR: $env:isPR"
+	    Write-Verbose "Update-Version"
+	    Write-Verbose "isPR: $env:isPR"
 
         if($env:isPR -eq $true) { 
             Extract-VersionsFormat
@@ -148,8 +147,8 @@ function Update-Version {
             Write-Host "INNER EXCEPTION STACK TRACE: $($_.Exception.InnerException.StackTrace)"
         }
         exit 1
-    } finalize {
-        Write-Host "END: Update-Version"
+    } finally {
+        Write-Host "Update-Version done"
     }
 }
 
