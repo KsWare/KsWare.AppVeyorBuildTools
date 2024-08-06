@@ -10,16 +10,6 @@ $script:moduleNames = @(
 )
 Write-Verbose "Modules: $script:moduleNames"
 
-# Init AppVeyor API request 
-function InitAppVeyorApiRequest {    
-    $global:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
-    $global:AppveyorApiRequestHeaders = @{
-      "Authorization" = "Bearer $env:AppVeyorApiToken"
-      "Content-type" = "application/json"
-      "Accept" = "application/json"
-    }
-}
-
 # Detect PR   
 function DetectPR {
     if($env:APPVEYOR_PULL_REQUEST_NUMBER -match "^\d+$") {$isPR=$true} else {$isPR=$false}
@@ -90,7 +80,7 @@ function Import-AppVeyorModules {
 function Initialize-AppVeyor {
     [CmdletBinding()] param ()
 
-    InitAppVeyorApiRequest
+    Initialize-AppVeyorApiRequest
     DetectPR
 }
 

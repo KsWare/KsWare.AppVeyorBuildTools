@@ -81,11 +81,12 @@ Publishes all files from a directory to a ftp server
 
 Name | Description
 ---- | ---
-`isPR` | $true if current build is a pull request; else $false
-`BuildVersion` | "VersionPrefix" e.g. "1.2.3" (from 1.2.3.999)
-`BuildNumber` | Auto incremented build number
-`VersionSuffix` | Version suffix e.g. "-pre" or "-beta"
-`VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
+`env:isPR` | $true if current build is a pull request; else $false
+`env:BuildVersion` | "VersionPrefix" e.g. "1.2.3" (from 1.2.3.999)
+`env:BuildNumber` | Auto incremented build number
+`env:VersionSuffix` | Version suffix e.g. "-pre" or "-beta"
+`env:VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
+`env:NewVersion` | new BuildVersion, read from file
 `global:AppVeyorApiUrl` | https://ci.appveyor.com/api
 `global:AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
-`NewVersion` | new BuildVersion, read from file
+`global:AppVeyorSettings` | 

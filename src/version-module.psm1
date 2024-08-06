@@ -3,10 +3,10 @@ function Read-AppVeyorSettings {
     # Read Settings
     if($isPR -eq $false) {
         $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $global:AppveyorApiRequestHeaders
-        $env:AppveyorSettings = $response.settings        
+        $global:AppVeyorSettings = $response.settings        
     } else {
         # dummy settings
-        $env:AppveyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}        
+        $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}        
     }
 }
 
@@ -87,12 +87,12 @@ function Reset-BuildNumber {
 
 function Update-AppVeyorSettings {
     Write-Verbose "Update-AppVeyorSettings"
-    if(-not $env:AppVeyorSettings) {throw "env:AppVeyorSettings is empty."}
+    if(-not $global:AppVeyorSettings) {throw "env:AppVeyorSettings is empty."}
     if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
     if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 
-    $env:AppVeyorSettings.versionFormat = "$env:buildVersion.{build})"
-    Write-Host "Build version format: $($env:AppVeyorSettings.versionFormat)"
+    $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build})"
+    Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $env:AppVeyorSettings
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
