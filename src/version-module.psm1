@@ -49,7 +49,6 @@ function Get-VersionFromFile {
         Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
         Exit-AppveyorBuild
     }
-    Write-Verbose "true"
 
     Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
     Write-Verbose "return $newVersion"
@@ -87,14 +86,13 @@ function Reset-BuildNumber {
 
 function Update-AppVeyorSettings {
     Write-Verbose "Update-AppVeyorSettings"
-    if(-not $global:AppVeyorSettings) {throw "env:AppVeyorSettings is empty."}
-    if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
-    if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
+    if(-not $global:AppVeyorSettings) {throw "global:AppVeyorSettings is empty."}
+    if(-not $global:AppVeyorApiUrl) {throw "global:AppVeyorApiUrl is empty."}
+    if(-not $global:AppVeyorApiRequestHeaders) {throw "global:AppVeyorApiRequestHeaders is empty."}
 
     $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
-    $body = ConvertTo-Json -Depth 10 -InputObject $env:AppVeyorSettings
-    Write-Verbose $body
+    $body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
 
