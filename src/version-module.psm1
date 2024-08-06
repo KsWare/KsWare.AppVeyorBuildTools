@@ -93,6 +93,7 @@ function Update-AppVeyorSettings {
     $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
+    Write-Verbose $body
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
 
