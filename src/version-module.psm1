@@ -64,14 +64,20 @@ function Get-VersionFromFile {
 }
 
 function Test-NewVersionIsGreater {
-    Write-Verbose "Test-NewVersionIsCreater"
+    Write-Verbose "Test-NewVersionIsCreater $env:buildVersion $env:newBuildVersion"
     $currentVersionSegments = $env:buildVersion.Split(".")
     $newVersionSegments = $env:newBuildVersion.Split(".")
 
     for ($i = 0; $i -lt $currentVersionSegments.Length; $i++) {
-        if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { return $true } 
-        if ([int]$newVersionSegments[$i] -lt [int]$currentVersionSegments[$i]) { throw "New version is smaller than current version." }
+        if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { 
+            Write-Verbose ":True"
+            return $true 
+        } 
+        if ([int]$newVersionSegments[$i] -lt [int]$currentVersionSegments[$i]) { 
+            throw "New version is smaller than current version." 
+        }
     }
+    Write-Verbose ":False"
     return $false
 }
 
@@ -125,6 +131,7 @@ function Update-Version {
             $env:newBuildVersion = Get-VersionFromFile
             if(-not $env:newBuildVersion) { return }    
             if(Test-NewVersionIsGreater) { Reset-BuildNumber }
+            Write-Verbose "C"
             $env:buildVersion = $env:newBuildVersion
             Update-AppVeyorSettings
             Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
