@@ -1,20 +1,8 @@
-
-# Init AppVeyor API request 
-function Init-AppVeyorApiRequest {
-    Write-Verbose "Init-AppVeyorApiRequest"
-	$env:AppveyorApiUrl = 'https://ci.appveyor.com/api'
-	$env:AppveyorApiRequestHeaders = @{
-		"Authorization" = "Bearer $env:AppVeyorApiToken"
-		"Content-type" = "application/json"
-		"Accept" = "application/json"
-	}
-}
-
 function Read-AppVeyorSettings {
     Write-Verbose "Read-AppVeyorSettings"
     # Read Settings
     if($isPR -eq $false) {
-        $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $appveyorApiRequestHeaders
+        $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $env:AppveyorApiRequestHeaders
         $env:AppveyorSettings = $response.settings        
     } else {
         # dummy settings
@@ -37,7 +25,7 @@ function Get-VersionFromFile {
     Write-Verbose "Get-VersionFromFile"
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
     
-    Write-Host "Read new version from file"
+    Write-Output "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
@@ -63,7 +51,7 @@ function Get-VersionFromFile {
     }
     Write-Verbose "true"
 
-    Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
+    Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
     Write-Verbose "return $newVersion"
     return $newVersion    
 }
@@ -149,8 +137,8 @@ function Update-Version {
     }
     catch {
         Write-Host "ERROR: $($_.Exception.Message)"
-        Write-Host "ERROR: $($_.Exception.StackTrace)"
-        Write-Host "ERROR: occurred at line: $($_.InvocationInfo.ScriptLineNumber) at position: $($_.InvocationInfo.OffsetInLine)"
+        Write-Host "ERROR: in $($_.InvocationInfo.MyCommand) at $($_.InvocationInfo.ScriptLineNumber):$($_.InvocationInfo.OffsetInLine)"
+        Write-Host "ERROR: $($_.Exception.StackTrace)"        
         if ($_.Exception.InnerException) {
             Write-Host "INNER EXCEPTION: $($_.Exception.InnerException.Message)"
             Write-Host "INNER EXCEPTION STACK TRACE: $($_.Exception.InnerException.StackTrace)"
@@ -168,7 +156,7 @@ function Reset-BuildNumber {
     if($env:isPR -eq $true) { return } # skip if this is a pull request
     $build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
     $json = $build | ConvertTo-Json    
-    Invoke-RestMethod -Method Put "$env:AppveyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $headers
+    Invoke-RestMethod -Method Put "$env:AppveyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $env:AppveyorApiRequestHeaders
     Write-Output "Next build number: $env:APPVEYOR_BUILD_NUMBER"
 }
 
