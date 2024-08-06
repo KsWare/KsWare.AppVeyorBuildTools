@@ -1,0 +1,63 @@
+Usage:
+  appveyor <command> [-option value] [-option value] ...
+Commands:
+  Version                   - displays AppVeyor version.
+  AddMessage                - adds a new message to the current build job.
+  AddCompilationMessage     - adds a new compilation message to the current build job.
+  SetVariable               - set build session variable.
+  AddTest                   - adds a new test results to the current build job.
+  UpdateTest                - updates test results on the current build job.
+  PushArtifact              - uploads file to job artifacts storage.
+  DownloadFile              - download file from URL.
+  StartAppveyorBuild        - starts a new AppVeyor build.
+  RegisterXamarinLicense    - activates Xamarin license for specific product.
+  UnregisterXamarinLicense  - deactivates Xamarin license.
+  Exit                      - exit build job with success.
+Command exited with code 1
+
+
+https://www.appveyor.com/docs/how-to/download-file/
+
+$source = "http://yoursite.com/file.xml"
+$destination = "c:\application\data\newdata.xml"
+Invoke-WebRequest $source -OutFile $destination
+
+$source = "ftp://yoursite.com/file.xml"
+$destination = "c:\application\data\newdata.xml"
+Invoke-WebRequest $source -OutFile $destination -Credential ftpUser
+
+Start-FileDownload <url> [-FileName <string>] [-Timeout <int>]
+
+appveyor DownloadFile <url> [-FileName <string>] [-Timeout <int>]
+
+curl [-fsSL...] [-o <output-filename>] [-m <timeout-in-seconds>] <url>
+
+
+
+
+Name                           Value                                                                                                                                                                                                 
+----                           -----                                                                                                                                                                                                 
+APPVEYOR_ACCOUNT_NAME          KsWare                                                                                                                                                                                                
+APPVEYOR_API_URL               http://localhost:49681/                                                                                                                                                                               
+APPVEYOR_BUILD_FOLDER          C:\projects\ksware-appveyorclient                                                                                                                                                                     
+APPVEYOR_BUILD_ID              50357871                                                                                                                                                                                              
+APPVEYOR_BUILD_NUMBER          35                                                                                                                                                                                                    
+APPVEYOR_BUILD_VERSION         0.6.0.35+20240806175920                                                                                                                                                                               
+APPVEYOR_BUILD_WORKER_IMAGE    Visual Studio 2022                                                                                                                                                                                    
+APPVEYOR_JOB_ID                wqxy80g9yrm3af6o                                                                                                                                                                                      
+APPVEYOR_JOB_NUMBER            1                                                                                                                                                                                                     
+APPVEYOR_PROJECT_ID            420533                                                                                                                                                                                                
+APPVEYOR_PROJECT_NAME          KsWare.AppVeyorClient                                                                                                                                                                                 
+APPVEYOR_PROJECT_SLUG          ksware-appveyorclient                                                                                                                                                                                 
+APPVEYOR_RE_BUILD              True                                                                                                                                                                                                  
+APPVEYOR_REPO_BRANCH           develop                                                                                                                                                                                               
+APPVEYOR_REPO_COMMIT           31f6eae6174fd9a1ceee51e9ff999b8ae97949b4                                                                                                                                                              
+APPVEYOR_REPO_COMMIT_AUTHOR    SchreinerK                                                                                                                                                                                            
+APPVEYOR_REPO_COMMIT_AUTHOR... SchreinerK@users.noreply.github.com                                                                                                                                                                   
+APPVEYOR_REPO_COMMIT_MESSAGE   v0.7.1                                                                                                                                                                                                
+APPVEYOR_REPO_COMMIT_TIMESTAMP 2024-08-05T19:10:37.0000000Z                                                                                                                                                                          
+APPVEYOR_REPO_NAME             KsWare/KsWare.AppVeyorClient                                                                                                                                                                          
+APPVEYOR_REPO_PROVIDER         gitHub                                                                                                                                                                                                
+APPVEYOR_REPO_SCM              git                                                                                                                                                                                                   
+APPVEYOR_REPO_TAG              false                                                                                                                                                                                                 
+APPVEYOR_URL                   https://ci.appveyor.com     
