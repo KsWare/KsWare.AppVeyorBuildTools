@@ -9,11 +9,3 @@ Import-Module -Name $mainModulePath -Force -Verbose
 Import-SubModule -TestParam "Hello from Main Module" -scriptDir $scriptDir
 
 Test-FtpModule
-
-$a = 1
-$b ="2"
-if($a+1 -eq $b) {
-	Write-Output ("true")
-} else {
-	Write-Output ("false")
-}

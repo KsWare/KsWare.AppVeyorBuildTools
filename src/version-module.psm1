@@ -24,6 +24,7 @@ function Read-AppVeyorSettings {
 
 # Extract version format
 function Extract-VersionsFormat {  
+    Write-Verbose "Extract-VersionsFormat"
     $currentVersion = $env:APPVEYOR_BUILD_VERSION
     $env:VersionSegmentCount = $($currentVersion.Split(".")).Count
     $env:buildVersion = $env:APPVEYOR_BUILD_VERSION -replace '\.[^.]*$$', ''
@@ -146,8 +147,13 @@ function Update-Version {
 	    Write-Output "env:buildNumber: $env:buildNumber"
     }
     catch {
-        Write-Output "ERROR: $($_.Exception.Message)"
-        Write-Output "ERROR: $($_.Exception.StackTrace)"
+        Write-Host "ERROR: $($_.Exception.Message)"
+        Write-Host "ERROR: $($_.Exception.StackTrace)"
+        Write-Host "ERROR: occurred at line: $($_.InvocationInfo.ScriptLineNumber) at position: $($_.InvocationInfo.OffsetInLine)"
+        if ($_.Exception.InnerException) {
+            Write-Host "INNER EXCEPTION: $($_.Exception.InnerException.Message)"
+            Write-Host "INNER EXCEPTION STACK TRACE: $($_.Exception.InnerException.StackTrace)"
+        }
         exit 1
     } finalize {
         Write-Output "END: Update-Version"
