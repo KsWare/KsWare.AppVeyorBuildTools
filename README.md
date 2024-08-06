@@ -39,11 +39,11 @@ Import-AppVeyorModules will download und import all other AppVeyor cmdlets.
 
 #### 1. InitAppVeyorApiRequest
 
-Initializes the `$env:AppVeyorApiUrl` and `$env:AppveyorApiRequestHeaders` variable
+Initializes the `$env:AppVeyorApiUrl` and `$global:AppveyorApiRequestHeaders` variable
 
 ```powershell
-   $env:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
-   $env:AppveyorApiRequestHeaders = @{
+   $global:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
+   $global:AppveyorApiRequestHeaders = @{
       "Authorization" = "Bearer $env:AppVeyorApiToken"
       "Content-type" = "application/json"
       "Accept" = "application/json"
@@ -86,6 +86,6 @@ Name | Description
 `BuildNumber` | Auto incremented build number
 `VersionSuffix` | Version suffix e.g. "-pre" or "-beta"
 `VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
-`AppVeyorApiUrl` | https://ci.appveyor.com/api
-`AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
+`global:AppVeyorApiUrl` | https://ci.appveyor.com/api
+`global:AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
 `NewVersion` | new BuildVersion, read from file

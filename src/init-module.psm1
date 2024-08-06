@@ -12,8 +12,8 @@ Write-Verbose "Modules: $script:moduleNames"
 
 # Init AppVeyor API request 
 function InitAppVeyorApiRequest {    
-    $env:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
-    $env:AppveyorApiRequestHeaders = @{
+    $global:AppVeyorApiUrl = 'https://ci.appveyor.com/api'
+    $global:AppveyorApiRequestHeaders = @{
       "Authorization" = "Bearer $env:AppVeyorApiToken"
       "Content-type" = "application/json"
       "Accept" = "application/json"

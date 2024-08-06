@@ -2,7 +2,7 @@ function Read-AppVeyorSettings {
     Write-Verbose "Read-AppVeyorSettings"
     # Read Settings
     if($isPR -eq $false) {
-        $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $env:AppveyorApiRequestHeaders
+        $response = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $global:AppveyorApiRequestHeaders
         $env:AppveyorSettings = $response.settings        
     } else {
         # dummy settings
@@ -53,7 +53,7 @@ function Get-VersionFromFile {
 
     Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
     Write-Verbose "return $newVersion"
-    return $newVersion    
+    return $newVersion
 }
 
 function Test-NewVersionIsGreater {
@@ -76,25 +76,25 @@ function Test-NewVersionIsGreater {
 
 function Reset-BuildNumber {
     Write-Verbose "Reset-BuildNumber"
-    if(-not $env:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
-    if(-not $env:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
+    if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
+    if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 
     $env:buildNumber = 0
     $json = @{ nextBuildNumber = 1 } | ConvertTo-Json    
     Write-Host "Invoke 'Reset Build Nummer'"
-    Invoke-RestMethod -Method Put "$env:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $env:AppveyorApiRequestHeaders
+    Invoke-RestMethod -Method Put "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $global:AppveyorApiRequestHeaders
 } 
 
 function Update-AppVeyorSettings {
     Write-Verbose "Update-AppVeyorSettings"
     if(-not $env:AppVeyorSettings) {throw "env:AppVeyorSettings is empty."}
-    if(-not $env:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
-    if(-not $env:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
+    if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
+    if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
 
     $env:AppVeyorSettings.versionFormat = "$env:buildVersion.{build})"
     Write-Host "Build version format: $($env:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $env:AppVeyorSettings
-    $response = Invoke-RestMethod -Method Put -Uri "$env:AppVeyorApiUrl/projects" -Headers $env:AppVeyorApiRequestHeaders -Body $body
+    $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
 }
 
 # Enhance build version with timestamp
@@ -156,7 +156,7 @@ function Reset-BuildNumber {
     if($env:isPR -eq $true) { return } # skip if this is a pull request
     $build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
     $json = $build | ConvertTo-Json    
-    Invoke-RestMethod -Method Put "$env:AppveyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $env:AppveyorApiRequestHeaders
+    Invoke-RestMethod -Method Put "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $global:AppVeyorApiRequestHeaders
     Write-Host "Next build number: $env:APPVEYOR_BUILD_NUMBER"
 }
 
