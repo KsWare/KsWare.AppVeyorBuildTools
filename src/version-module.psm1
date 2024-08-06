@@ -119,7 +119,6 @@ function Update-Version {
         }
         else {
 	        Write-Output "env:VersionFile: $env:VersionFile"	
-            Init-AppVeyorApiRequest 	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
             $env:newBuildVersion = Get-VersionFromFile
@@ -137,7 +136,8 @@ function Update-Version {
     }
     catch {
         Write-Host "ERROR: $($_.Exception.Message)"
-        Write-Host "ERROR: in $($_.InvocationInfo.MyCommand) at $($_.InvocationInfo.ScriptLineNumber):$($_.InvocationInfo.OffsetInLine)"
+        Write-Host "ERROR: in $($_.InvocationInfo.MyCommand)"
+        Write-Host "ERROR: in $MyInvocation.ScriptName at $($_.InvocationInfo.ScriptLineNumber):$($_.InvocationInfo.OffsetInLine)"
         Write-Host "ERROR: $($_.Exception.StackTrace)"        
         if ($_.Exception.InnerException) {
             Write-Host "INNER EXCEPTION: $($_.Exception.InnerException.Message)"
