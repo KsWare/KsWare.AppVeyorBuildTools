@@ -63,7 +63,8 @@ function Get-VersionFromFile {
         }
         Write-Verbose "true"
 
-        Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"	
+        Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
+        Write-Verbose "return $newVersion"
         return $newVersion
     } catch {
         Write-Output "ERROR: $($_.Exception.Message)"
