@@ -33,37 +33,42 @@ function Extract-VersionsFormat {
 
 # Get new version from file
 function Get-VersionFromFile {
-    Write-Verbose "Get-VersionFromFile"
-    if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
+    try {
+        Write-Verbose "Get-VersionFromFile"
+        if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
     
-    Write-Output "Read new version from file"
-    $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
-    $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
+        Write-Output "Read new version from file"
+        $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
+        $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
-    foreach ($line in $fileContent) {
-        if ($line -match $versionPattern) {
-            $newVersion = $matches['version']
-            Write-Verbose "New version found: '$newVersion' in line '$line'"
-            break
+        foreach ($line in $fileContent) {
+            if ($line -match $versionPattern) {
+                $newVersion = $matches['version']
+                Write-Verbose "New version found: '$newVersion' in line '$line'"
+                break
+            }
+        }    	
+        if(-not ($newVersion)) {
+            Write-Verbose "$fileContent"
+            Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
+            Exit-AppveyorBuild
         }
-    }    	
-    if(-not ($newVersion)) {
-        Write-Verbose "$fileContent"
-        Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
-        Exit-AppveyorBuild
-    }
 
-    $newVersionSegments = $newVersion.Split(".")	
-    Write-Verbose "New version segments: $($newVersionSegments.Count) parts"
-    Write-Verbose "Expected version segments: $($env:VersionSegmentCount)"
-    if($newVersionSegments.Count+1 -ne [int]$env:VersionSegmentCount) {
-        $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
-        Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
-        Exit-AppveyorBuild
-    }
+        $newVersionSegments = $newVersion.Split(".")	
+        Write-Verbose "New version segments: $($newVersionSegments.Count) parts"
+        Write-Verbose "Expected version segments: $($env:VersionSegmentCount)"
+        if($newVersionSegments.Count+1 -ne [int]$env:VersionSegmentCount) {
+            $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
+            Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
+            Exit-AppveyorBuild
+        }
 
-    Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"	
-    return $newVersion
+        Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"	
+        return $newVersion
+    } catch {
+        Write-Output "ERROR: $($_.Exception.Message)"
+        Write-Output "ERROR: $($_.Exception.StackTrace)"
+    }
 }
 
 function Test-NewVersionIsGreater {
