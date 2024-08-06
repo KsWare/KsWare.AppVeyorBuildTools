@@ -58,10 +58,12 @@ function Get-VersionFromFile {
         Write-Verbose "New version segments: $($newVersionSegments.Count+1) parts (Type: $($newVersionSegments.GetType().Name))"
         Write-Verbose "Expected version segments: $env:VersionSegmentCount parts (Type: $($env:VersionSegmentCount.GetType().Name))"
         if($newVersionSegments.Count+1 - [int]$env:VersionSegmentCount -ne 0) {
+            Write-Verbose "false"
             $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
             Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
             Exit-AppveyorBuild
         }
+        Write-Verbose "true"
 
         Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"	
         return $newVersion
