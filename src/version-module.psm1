@@ -17,7 +17,7 @@ function Extract-VersionsFormat {
     $env:VersionSegmentCount = $($currentVersion.Split(".")).Count
     $env:buildVersion = $env:APPVEYOR_BUILD_VERSION -replace '\.[^.]*$$', ''
     $env:buildNumber = $env:APPVEYOR_BUILD_NUMBER
-   	Write-Output "Current version: $env:buildVersion.* / $($currentVersionSegments.Count) parts"
+   	Write-Host "Current version: $env:buildVersion.* / $($currentVersionSegments.Count) parts"
 }
 
 # Get new version from file
@@ -25,7 +25,7 @@ function Get-VersionFromFile {
     Write-Verbose "Get-VersionFromFile"
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
     
-    Write-Output "Read new version from file"
+    Write-Host "Read new version from file"
     $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
@@ -51,7 +51,7 @@ function Get-VersionFromFile {
     }
     Write-Verbose "true"
 
-    Write-Output "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
+    Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
     Write-Verbose "return $newVersion"
     return $newVersion    
 }
@@ -81,7 +81,7 @@ function Reset-BuildNumber {
 
     $env:buildNumber = 0
     $json = @{ nextBuildNumber = 1 } | ConvertTo-Json    
-    Write-Output "Invoke 'Reset Build Nummer'"
+    Write-Host "Invoke 'Reset Build Nummer'"
     Invoke-RestMethod -Method Put "$env:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $env:AppveyorApiRequestHeaders
 } 
 
@@ -104,21 +104,21 @@ function Update-VersionWithTimestamp {
     if (-not $env:versionMeta) {
         $env:versionMeta = "+$(Get-Date -Format 'yyyyMMddHHmmss')" }
     Update-AppveyorBuild -Version "$ENV:APPVEYOR_BUILD_VERSION$env:versionSuffix$env:versionMeta"
-    Write-Output "env:APPVEYOR_BUILD_VERSION: $ENV:APPVEYOR_BUILD_VERSION"
+    Write-Host "env:APPVEYOR_BUILD_VERSION: $ENV:APPVEYOR_BUILD_VERSION"
 }
 
 function Update-Version {
 	[CmdletBinding()]param ()
     try {
-	    Write-Output "START: Update-Version"
-	    Write-Output "isPR: $env:isPR"
+	    Write-Host "START: Update-Version"
+	    Write-Host "isPR: $env:isPR"
 
         if($env:isPR -eq $true) { 
             Extract-VersionsFormat
-            Write-Output ("INFO: Pull Request detected. skip Update-Version.")
+            Write-Host ("INFO: Pull Request detected. skip Update-Version.")
         }
         else {
-	        Write-Output "env:VersionFile: $env:VersionFile"	
+	        Write-Host "env:VersionFile: $env:VersionFile"	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
             $env:newBuildVersion = Get-VersionFromFile
@@ -130,9 +130,9 @@ function Update-Version {
             Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
         }
 	
-        Write-Output "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
-	    Write-Output "env:buildVersion: $env:buildVersion"
-	    Write-Output "env:buildNumber: $env:buildNumber"
+        Write-Host "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
+	    Write-Host "env:buildVersion: $env:buildVersion"
+	    Write-Host "env:buildNumber: $env:buildNumber"
     }
     catch {
         Write-Host "ERROR: $($_.Exception.Message)"
@@ -145,7 +145,7 @@ function Update-Version {
         }
         exit 1
     } finalize {
-        Write-Output "END: Update-Version"
+        Write-Host "END: Update-Version"
     }
 }
 
@@ -157,7 +157,7 @@ function Reset-BuildNumber {
     $build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
     $json = $build | ConvertTo-Json    
     Invoke-RestMethod -Method Put "$env:AppveyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $env:AppveyorApiRequestHeaders
-    Write-Output "Next build number: $env:APPVEYOR_BUILD_NUMBER"
+    Write-Host "Next build number: $env:APPVEYOR_BUILD_NUMBER"
 }
 
 Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset-BuildNumber
