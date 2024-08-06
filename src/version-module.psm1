@@ -12,7 +12,7 @@ function Read-AppVeyorSettings {
     }
     #$txt = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
     #Write-Verbose "global:AppVeyorSettings = $txt"
-    WriteVerbose "$global:AppVeyorSettings = {object}"
+    Write-Verbose "$global:AppVeyorSettings = {object}"
 }
 
 # Extract version format
