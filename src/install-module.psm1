@@ -1,10 +1,17 @@
-# TODO install click-once certificate
+# install click-once certificate
 function Install-ClickOnceCerticate {    
-     [CmdletBinding()] param ()
+     [CmdletBinding()] param (
+        [Parameter(Position=0, Mandatory=$true)][string]$certFile,
+        [Parameter(Position=1, Mandatory=$true)][string]$password,
+     )
+    #$certFile="src\KsWare.AppVeyorClient\Properties\KsWare.AppVeyorClient_TemporaryKey.pfx"
+    #$plainPassword = ConvertTo-SecureString -String "$env:CertFilePassword" -Force -AsPlainText
 
-    $certFile="src\KsWare.AppVeyorClient\Properties\KsWare.AppVeyorClient_TemporaryKey.pfx"
-    $plainPassword = ConvertTo-SecureString -String "$env:CertFilePassword" -Force -AsPlainText
-    Import-PfxCertificate -FilePath "$env:APPVEYOR_BUILD_FOLDER\$certFile" -CertStoreLocation Cert:\CurrentUser\My -Password $plainPassword -Exportable
+    if (-not [System.IO.Path]::IsPathRooted($certFile)) {
+        $certFile = [System.IO.Path]::GetFullPath((Join-Path -Path $env:APPVEYOR_BUILD_FOLDER -ChildPath $certFile))
+    }
+    $plainPassword = ConvertTo-SecureString -String $password -Force -AsPlainText
+    Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\CurrentUser\My -Password $plainPassword -Exportable
 }
 
 function Clone-Repository {

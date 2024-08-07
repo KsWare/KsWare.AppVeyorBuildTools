@@ -30,6 +30,7 @@ Name | Description
 [Update-Version](###Update-Version) | 
 [Publish-ToFTP](###Publish-ToFTP) | 
 [Reset-BuildNumber](###Reset-BuildNumber) | 
+[Install-ClickOnceCerticate](###Install-ClickOnceCerticate) | 
 
 ### Import-AppVeyorModules
 
@@ -71,11 +72,29 @@ Use `Reset-BuildNumber` in `on_failure` script
 
 Publishes all files from a directory to a ftp server
 
-```yaml
+```powershell
+Publish-ToFTP <local-dir> <remote-dir> <username> <password>
+```
 
+```powershell
+Publish-ToFTP "MyProject\bin\publish" "ftp://server.name/path $env:FtpUser $env:FtpPassword
 ```
 
 ### Reset-BuildNumber
+
+```powershell
+Reset-BuildNumber
+```
+
+### Install-ClickOnceCerticate
+
+```powershell
+Install-ClickOnceCerticate <cert-file> <password>
+```
+
+```powershell
+Install-ClickOnceCerticate mycert.pfx $env:CertPassword
+```
 
 ## Environment Variables
 
