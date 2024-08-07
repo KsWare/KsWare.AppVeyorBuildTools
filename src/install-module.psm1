@@ -2,7 +2,7 @@
 function Install-ClickOnceCerticate {    
      [CmdletBinding()] param (
         [Parameter(Position=0, Mandatory=$true)][string]$certFile,
-        [Parameter(Position=1, Mandatory=$true)][string]$password,
+        [Parameter(Position=1, Mandatory=$true)][string]$password
      )
     #$certFile="src\KsWare.AppVeyorClient\Properties\KsWare.AppVeyorClient_TemporaryKey.pfx"
     #$plainPassword = ConvertTo-SecureString -String "$env:CertFilePassword" -Force -AsPlainText
