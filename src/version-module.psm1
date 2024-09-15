@@ -17,23 +17,27 @@ function Read-AppVeyorSettings {
 }
 
 # Extract version format
-function Extract-VersionsFormat {  
+function Extract-VersionsFormat {
+    # supported: 1.2.3.{build}; 1.2.{build};  1.2.{build}.0
     Write-Verbose "Extract-VersionsFormat"
+    $versionSegments=$env:APPVEYOR_BUILD_VERSION.Split(".")
+    $env:VersionSegmentCount = $versionSegments.Count
+    if ($env:VersionSegmentCount -eq 3) {
+        $env:buildVersion = "$($versionSegments[0..2] -join '.')"
+        $env:buildNumber = "0"
+    } elseif ($env:VersionSegmentCount -eq 4) {
+        $env:buildVersion = "$($versionSegments[0..2] -join '.')"
+        $env:buildNumber = $versionSegments[3]
+    } else {
+        Write-Error "ERROR: Unsupported version format. Version must have 3 or 4 segments."
+        Exit-AppveyorBuild
+    }
+
     if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
     $versionFormatSegments = $env:versionFormat.Split(".")
-    $env:VersionSegmentCount =$versionFormatSegments.Count
-    $currentVersion = $env:APPVEYOR_BUILD_VERSION
-    $env:buildNumber = $env:APPVEYOR_BUILD_NUMBER
-    if ($versionFormatSegments[-1] -match '^\d+$') {
-        $env:buildVersion = $currentVersion
-        $env:useBuildNumberInVersion = $false
-        Write-Host "Current version: $env:buildVersion / $env:VersionSegmentCount parts"
-    } else {
-        # The last segment is not a number, so remove
-        $env:buildVersion = $currentVersionSegments[0..($currentVersionSegments.Length - 2)] -join '.'
-        $env:useBuildNumberInVersion = $true
-        Write-Host "Current version: $env:buildVersion.$env:buildNumber / $env:VersionSegmentCount parts"
-    }    
+    $env:versionFixedSegmentCount = ($env:versionFormat.Split(".{build}"))[0].Split('.').Count
+
+    Write-Host "Current version: $env:buildVersion.$env:buildNumber"
 }
 
 # Read new version from file
@@ -58,20 +62,32 @@ function Read-VersionFromFile {
         Exit-AppveyorBuild
     }
 
-    $newVersionSegments = $newVersion.Split(".")
-    $expectedSegmentCount = ([int]$env:VersionSegmentCount)
-    if ($env:useBuildNumberInVersion -eq $true) {$expectedSegmentCount = $expectedSegmentCount -1}
-    if($expectedSegmentCount -ne $newVersionSegments.Count) {
-        Write-Verbose "false: $expectedSegmentCount -ne $($newVersionSegments.Count)"
-        $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
+    $newVersionSegments = $newVersion.Split(".")    
+    if($newVersionSegments.Count -ne $env:versionFixedSegmentCount) {
+        Write-Verbose "false: $($newVersionSegments.Count) -ne $env:versionFixedSegmentCount"
+        #$env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
         Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
         Exit-AppveyorBuild
     }
+    
+    if(-not $newVersion) { return }    
+    $env:newBuildVersionFormat = $env:versionFormat -replace '^.*\{build\}', "$newVersion{build}"
+    $env:newBuildVersion = $newVersion   
 
-    $env:newBuildVersion = $newVersion
-    $env:newBuildVersionFormat = $newVersion
-    if ($env:useBuildNumberInVersion -eq $true) {$env:newBuildVersionFormat = "$newVersion.{build}" }
-    Write-Host "New version: $env:newBuildVersionFormat / $env:VersionSegmentCount parts"        
+    # --- evaluation and update ----------
+
+    if (Test-NewVersionIsGreater) {
+        if ($env:versionFixedSegmentCount -eq 2) {
+            $env:buildVersion = "$newVersion.0"
+        } else {
+            $env:buildVersion = $newVersion
+        }
+        Reset-BuildNumber
+    } else {   
+        $env:buildVersion = $newVersion
+    }
+    
+    Write-Host "New version: $env:newBuildVersionFormat / $env:newBuildVersion.$env:buildNumber"        
 }
 
 function Test-NewVersionIsGreater {
@@ -79,7 +95,7 @@ function Test-NewVersionIsGreater {
     $currentVersionSegments = $env:buildVersion.Split(".")
     $newVersionSegments = $env:newBuildVersion.Split(".")
 
-    for ($i = 0; $i -lt $currentVersionSegments.Length; $i++) {
+    for ($i = 0; $i -lt ([int]$env:versionFixedSegmentCount)+1; $i++) {
         if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { 
             Write-Verbose ":True"
             return $true 
@@ -140,11 +156,8 @@ function Update-Version {
 	        Write-Host "env:VersionFile: $env:VersionFile"	
             Read-AppVeyorSettings	
 	        Extract-VersionsFormat
-            Read-VersionFromFile
+            Read-VersionFromFile            
             if(-not $env:newBuildVersion) { return }    
-            if(Test-NewVersionIsGreater) { Reset-BuildNumber }
-            Write-Verbose "C"
-            $env:buildVersion = $env:newBuildVersionFormat -replace '{build}', $env:buildNumber
             Update-AppVeyorSettings
             Update-AppveyorBuild -Version "$env:buildVersion$env:versionSuffix$env:versionMeta"
         }
