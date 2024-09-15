@@ -1,4 +1,4 @@
-# AppVeyorBuildTools
+﻿# AppVeyorBuildTools
 
 A set of cmdlets to use in AppVeyor CI.
 
@@ -17,9 +17,9 @@ This will download and import all other useful cmdlets.
 
 ```yaml
 init:
-�
+…
 - ps: Initialize-AppVeyor
-�
+…
 ```
 ## Cmdlets
 
@@ -30,7 +30,9 @@ Name | Description
 [Update-Version](###Update-Version) | 
 [Publish-ToFTP](###Publish-ToFTP) | 
 [Reset-BuildNumber](###Reset-BuildNumber) | 
+[Reset-NextBuildNumber](###Reset-NextBuildNumber) | Reset next build number to current build number
 [Install-ClickOnceCerticate](###Install-ClickOnceCerticate) | 
+[Read-PublishProfile](###Read-PublishProfile) | 
 
 ### Import-AppVeyorModules
 
@@ -82,8 +84,23 @@ Publish-ToFTP "MyProject\bin\publish" "ftp://server.name/path $env:FtpUser $env:
 
 ### Reset-BuildNumber
 
+Resets the current build number to 0 and next build number to 1.
+
+Used by [Update-Version](###Update-Version) if the new version is greater then old version.
+
+current: 1.2.3.444, new: 1.3.0 results in 1.3.0.0
+
 ```powershell
 Reset-BuildNumber
+```
+
+### Reset-NextBuildNumber
+
+Resets the next build number to current build number (Reverts the auto-increment).
+
+```yaml
+on_failure:
+- ps: Reset-NextBuildNumber
 ```
 
 ### Install-ClickOnceCerticate
@@ -96,16 +113,32 @@ Install-ClickOnceCerticate <cert-file> <password>
 Install-ClickOnceCerticate mycert.pfx $env:CertPassword
 ```
 
+### Read-PublishProfile
+
+```powershell
+Read-PublishProfile <profile-name>
+```
+```powershell
+Read-PublishProfile "ClickOnceProfile"
+```
+Result:  
+`global:PublishProfileContent` The publish profile content [xml]  
+`env:PublishDir` contains full path of \<PublishDir>  
+`env:PublishUrl` contains full path of \<PublishUrl>
+
 ## Environment Variables
 
-Name | Description
+Name | Description | Example
 ---- | ---
 `env:isPR` | $true if current build is a pull request; else $false
-`env:BuildVersion` | "VersionPrefix" e.g. "1.2.3" (from 1.2.3.999)
-`env:BuildNumber` | Auto incremented build number
-`env:VersionSuffix` | Version suffix e.g. "-pre" or "-beta"
-`env:VersionMeta` | Version meta part, a timestamp e.g. "+20240805213940"
-`env:NewVersion` | new BuildVersion, read from file
-`global:AppVeyorApiUrl` | https://ci.appveyor.com/api
-`global:AppveyorApiRequestHeaders` | `@{`<br/>`    "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`    "Content-type" = "application/json"`<br/>`    "Accept" = "application/json"`<br/>`}`
+`env:BuildVersion` | "VersionPrefix" | `1.2.3` (from 1.2.3.999)
+`env:BuildNumber` | Auto incremented build number | `999`
+`env:VersionSuffix` | Version suffix | `-pre` or `-beta`
+`env:VersionMeta` | Version meta part, a timestamp | `+20240805213940`
+`env:NewVersion` | new BuildVersion, read from file | `1.3.0`
+`env:VersionFormat` | 'Build version format' from AppVeyorSettings | `1.2.3.{build}`
+`env:NewVersionFormat` | new 'Build version format' | `1.3.0.{build}`
+`global:AppVeyorApiUrl` | | https://ci.appveyor.com/api
+`global:AppveyorApiRequestHeaders` || `@{`<br/>`  "Authorization" = "Bearer $env:AppVeyorApiToken"`<br/>`  "Content-type" = "application/json"`<br/>`  "Accept" = "application/json"`<br/>`}`
 `global:AppVeyorSettings` | 
+

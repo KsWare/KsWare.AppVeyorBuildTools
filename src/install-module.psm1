@@ -28,4 +28,40 @@ function Clone-Repository {
 
 }
 
+function Read-PublishProfile {
+    [CmdletBinding()] param (
+        [Parameter(Position=0, Mandatory=$true)][string]$name
+     )
+    $repositoryPath = $env:APPVEYOR_BUILD_FOLDER
+    $fileName = "$name.pubxml"
+    $profiles = Get-ChildItem -Path $repositoryPath -Recurse -Filter *.pubxml | Where-Object { $_.Name -eq $fileName }
+
+    if ($publishProfiles.Count -eq 0) {
+        Write-Error "No publish profile found with the name '$profileName'."
+        Exit-AppVeyorBuild
+    } elseif ($publishProfiles.Count -gt 1) {
+        Write-Warning "Profile name '$name' is ambigous. First one is used."
+    }
+    $pubxmlFile = $profiles[0]
+    Write-Host "Profile: $pubxmlFile"
+
+    $projectFilePattern = ".*\.(csproj|vbproj|fsproj)$"
+    while ($directory -ne (Get-Item $directory).PSDrive.Root) {
+        $projectFiles = Get-ChildItem -Path $directory -File | Where-Object { $_.Name -match $projectFilePattern }
+        if ($projectFiles) { $projectPath = $directory; break }
+        $directory = Split-Path -Parent $directory
+    }
+    if ($projectPath -eq $null) {
+        Write-Error "No project file found."
+        Exit-AppVeyorBuild
+    }
+
+    [xml]$pubxml = Get-Content $pubxmlFile
+    $global:PublishProfileContent = $pubxml
+    $env:PublishDir = "$projectPath\$($pubxml.Project.PropertyGroup.PublishDir.TrimEnd('\'))"   # bin\Release\net8.0-windows\app.publish\
+    $env:PublishUrl = "$projectPath\$($pubxml.Project.PropertyGroup.PublishUrl.TrimEnd('\'))"	# bin\Publish
+    Write-Host "env:PublishDir: $env:PublishDir"
+    Write-Host "env:PublishUrl: $env:PublishUrl"
+}
+
 Export-ModuleMember -Function *-*

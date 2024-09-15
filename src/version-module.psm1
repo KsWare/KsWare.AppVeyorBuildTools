@@ -7,9 +7,10 @@ function Read-AppVeyorSettings {
         Write-Verbose "settings loaded"
     } else {
         # dummy settings
-        $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}      
+        $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}
         Write-Verbose "dummy settings created"
     }
+    $env:versionFormat = $($global:AppVeyorSettings.versionFormat)
     #$txt = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
     #Write-Verbose "global:AppVeyorSettings = $txt"
     Write-Verbose "$global:AppVeyorSettings = {object}"
@@ -18,11 +19,21 @@ function Read-AppVeyorSettings {
 # Extract version format
 function Extract-VersionsFormat {  
     Write-Verbose "Extract-VersionsFormat"
+    if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
+    $versionFormatSegments = $env:versionFormat.Split(".")
+    $env:VersionSegmentCount =$versionFormatSegments.Count
     $currentVersion = $env:APPVEYOR_BUILD_VERSION
-    $env:VersionSegmentCount = $($currentVersion.Split(".")).Count
-    $env:buildVersion = $env:APPVEYOR_BUILD_VERSION -replace '\.[^.]*$$', ''
     $env:buildNumber = $env:APPVEYOR_BUILD_NUMBER
-   	Write-Host "Current version: $env:buildVersion.* / $($currentVersionSegments.Count) parts"
+    if ($versionFormatSegments[-1] -match '^\d+$') {
+        $env:buildVersion = $currentVersion
+        $env:useBuildNumberInVersion = $false
+        Write-Host "Current version: $env:buildVersion / $env:VersionSegmentCount parts"
+    } else {
+        # The last segment is not a number, so remove
+        $env:buildVersion = $currentVersionSegments[0..($currentVersionSegments.Length - 2)] -join '.'
+        $env:useBuildNumberInVersion = $true
+        Write-Host "Current version: $env:buildVersion.$env:buildNumber / $env:VersionSegmentCount parts"
+    }    
 }
 
 # Read new version from file
@@ -47,16 +58,20 @@ function Read-VersionFromFile {
         Exit-AppveyorBuild
     }
 
-    $newVersionSegments = $newVersion.Split(".")	
-    if($newVersionSegments.Count+1 -ne $env:VersionSegmentCount ) {
-        Write-Verbose "false: $($newVersionSegments.Count+1) -ne $env:VersionSegmentCount "
+    $newVersionSegments = $newVersion.Split(".")
+    $expectedSegmentCount = ([int]$env:VersionSegmentCount)
+    if ($env:useBuildNumberInVersion -eq $true) {$expectedSegmentCount = $expectedSegmentCount -1}
+    if($expectedSegmentCount -ne $newVersionSegments.Count) {
+        Write-Verbose "false: $expectedSegmentCount -ne $($newVersionSegments.Count)"
         $env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
         Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
         Exit-AppveyorBuild
     }
 
-    Write-Host "New version: $newVersion.* / $($newVersionSegments.Count+1) parts"
     $env:newBuildVersion = $newVersion
+    $env:newBuildVersionFormat = $newVersion
+    if ($env:useBuildNumberInVersion -eq $true) {$env:newBuildVersionFormat = "$newVersion.{build}" }
+    Write-Host "New version: $env:newBuildVersionFormat / $env:VersionSegmentCount parts"        
 }
 
 function Test-NewVersionIsGreater {
@@ -77,6 +92,7 @@ function Test-NewVersionIsGreater {
     return $false
 }
 
+# Reset build number to 0 and next build number to 1
 function Reset-BuildNumber {
     Write-Verbose "Reset-BuildNumber"
     if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
@@ -94,7 +110,7 @@ function Update-AppVeyorSettings {
     if(-not $global:AppVeyorApiUrl) {throw "global:AppVeyorApiUrl is empty."}
     if(-not $global:AppVeyorApiRequestHeaders) {throw "global:AppVeyorApiRequestHeaders is empty."}
 
-    $global:AppVeyorSettings.versionFormat = "$env:buildVersion.{build}"
+    $global:AppVeyorSettings.versionFormat = $env:newBuildVersionFormat
     Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
     $body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
     $response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
@@ -128,9 +144,9 @@ function Update-Version {
             if(-not $env:newBuildVersion) { return }    
             if(Test-NewVersionIsGreater) { Reset-BuildNumber }
             Write-Verbose "C"
-            $env:buildVersion = $env:newBuildVersion
+            $env:buildVersion = $env:newBuildVersionFormat -replace '{build}', $env:buildNumber
             Update-AppVeyorSettings
-            Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
+            Update-AppveyorBuild -Version "$env:buildVersion$env:versionSuffix$env:versionMeta"
         }
 	
         Write-Host "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
@@ -152,10 +168,10 @@ function Update-Version {
     }
 }
 
-# Reset build number
-function Reset-BuildNumber {
+# Reset next build number to current build number
+function Reset-NextBuildNumber {
 	[CmdletBinding()]param ()
-    Write-Verbose "Reset-BuildNumber"
+    Write-Verbose "Reset-NextBuildNumber"
     if($env:isPR -eq $true) { return } # skip if this is a pull request
     $build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
     $json = $build | ConvertTo-Json    
@@ -163,4 +179,15 @@ function Reset-BuildNumber {
     Write-Host "Next build number: $env:APPVEYOR_BUILD_NUMBER"
 }
 
-Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset-BuildNumber
+Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset-NextBuildNumber
+
+# $env:versionFormat            1.1.{build}    1.0.0   Read-AppVeyorSettings
+# $env:APPVEYOR_BUILD_NUMBER    999            999
+# $env:APPVEYOR_BUILD_VERSION   1.0.999        1.0.0
+# $env:useBuildNumberInVersion  true           false
+# $env:newBuildVersion          1.1            1.0.1   (from ChangeLog.md)
+# $env:newBuildVersionFormat    1.1.{build}    1.0.1
+# $env:buildVersion             1.1.0          1.0.1
+
+# $env:versionSuffix            -beta
+# $env:versionMeta              +20241201120000
