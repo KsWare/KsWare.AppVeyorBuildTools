@@ -50,6 +50,7 @@ function Read-VersionFromFile {
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
     foreach ($line in $fileContent) {
+        Write-Verbose "  |'$line'
         if ($line -match $versionPattern) {
             $newVersion = $matches['version']
             Write-Verbose "New version found: '$newVersion' in line '$line'"
