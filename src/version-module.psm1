@@ -58,9 +58,8 @@ function Read-VersionFromFile {
         }
     }    	
     if(-not ($newVersion)) {
-        #Write-Verbose "$fileContent"
-        $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5 -Raw
-        Write-Error -Message "`nERROR: No valid version found!`n`n$fileContent" -ErrorAction Stop
+        Write-Verbose "$fileContent"
+        Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
         Exit-AppveyorBuild
     }
 
@@ -68,7 +67,7 @@ function Read-VersionFromFile {
     if($newVersionSegments.Count -ne $env:versionFixedSegmentCount) {
         Write-Verbose "false: $($newVersionSegments.Count) -ne $env:versionFixedSegmentCount"
         #$env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
-        Write-Error -Message "`nERROR: Unsupported version format!" -ErrorAction Stop
+        Write-Error -Message "`nERROR: Unsupported version format! segments: $($newVersionSegments.Count), expected: $env:versionFixedSegmentCount" -ErrorAction Stop
         Exit-AppveyorBuild
     }
     
