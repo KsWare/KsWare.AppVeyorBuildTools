@@ -96,8 +96,8 @@ function Read-VersionFromFile {
 
 function Test-NewVersionIsGreater {
     Write-Verbose "Test-NewVersionIsCreater $env:buildVersion $env:newBuildVersion"
-    $currentVersionSegments = $env:buildVersion.Split('.', '+', '-')
-    $newVersionSegments = $env:newBuildVersion.Split('.', '+', '-')
+    $currentVersionSegments = $env:buildVersion.Split([char[]]('.','+','-'))
+    $newVersionSegments = $env:newBuildVersion.Split([char[]]('.','+','-'))
 
     for ($i = 0; $i -lt ([int]$env:versionFixedSegmentCount); $i++) {
         if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { 
