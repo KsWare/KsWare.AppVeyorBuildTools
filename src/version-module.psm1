@@ -30,7 +30,7 @@ function Extract-VersionsFormat {
         $env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
         $env:buildNumber = 0
     } elseif ($env:VersionSegmentCount -eq 4) {
-        if ($versionSegments[2]) -eq "{build}") {
+        if ($versionSegments[2] -eq "{build}") {
             $env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
             $env:buildNumber = 0
         } else {
