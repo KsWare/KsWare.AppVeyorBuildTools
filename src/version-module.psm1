@@ -5,12 +5,14 @@ function Read-AppVeyorSettings {
         $response = Invoke-RestMethod -Method Get -Uri "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings" -Headers $global:AppveyorApiRequestHeaders
         $global:AppVeyorSettings = $response.settings
         Write-Verbose "settings loaded"
+        Write-Verbose $global:AppVeyorSettings
     } else {
         # dummy settings
         $global:AppVeyorSettings = @{versionFormat = $env:APPVEYOR_BUILD_VERSION}
         Write-Verbose "dummy settings created"
     }
     $env:versionFormat = $($global:AppVeyorSettings.versionFormat)
+    Write-Verbose "  versionFormat: $env:versionFormat"
     #$txt = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
     #Write-Verbose "global:AppVeyorSettings = $txt"
     Write-Verbose "$global:AppVeyorSettings = {object}"
@@ -20,8 +22,9 @@ function Read-AppVeyorSettings {
 function Extract-VersionsFormat {
     # supported: 1.2.3.{build}; 1.2.{build};  1.2.{build}.0
     Write-Verbose "Extract-VersionsFormat"
-    $versionSegments=$env:APPVEYOR_BUILD_VERSION.Split(".")
+    $versionSegments = $env:APPVEYOR_BUILD_VERSION.Split(".")
     $env:VersionSegmentCount = $versionSegments.Count
+    Write-Verbose "  VersionSegmentCount: $env:VersionSegmentCount"
     if ($env:VersionSegmentCount -eq 3) {
         $env:buildVersion = "$($versionSegments[0..2] -join '.')"
         $env:buildNumber = "0"
@@ -34,9 +37,8 @@ function Extract-VersionsFormat {
     }
 
     if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
-    $versionFormatSegments = $env:versionFormat.Split(".")
     $env:versionFixedSegmentCount = ($env:versionFormat.Split(".{build}"))[0].Split('.').Count
-
+    Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"
     Write-Host "Current version: $env:buildVersion.$env:buildNumber"
 }
 
