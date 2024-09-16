@@ -75,7 +75,7 @@ function Read-VersionFromFile {
     }
     
     if(-not $newVersion) { return }    
-    $env:newBuildVersionFormat = $env:versionFormat -replace '^.*\{build\}', "$newVersion{build}"
+    $env:newBuildVersionFormat = $env:versionFormat -replace '^\.\{build\}', "$newVersion.{build}"
     $env:newBuildVersion = $newVersion   
 
     # --- evaluation and update ----------
