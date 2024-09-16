@@ -168,7 +168,7 @@ function Update-Version {
             Read-VersionFromFile            
             if(-not $env:newBuildVersion) { return }    
             Update-AppVeyorSettings
-            Update-AppveyorBuild -Version "$env:buildVersion$env:buildNumber$env:versionSuffix$env:versionMeta"
+            Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
         }
 	
         Write-Host "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
