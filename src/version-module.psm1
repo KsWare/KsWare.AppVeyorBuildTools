@@ -46,7 +46,7 @@ function Read-VersionFromFile {
     if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
     
     Write-Host "Read new version from file"
-    $versionPattern = "^(\s*\##?\s*v?)(?<version>\d+\.\d+\.\d+)"
+    $versionPattern = "^(\s*##?\s*v?)(?<version>\d+\.\d+(\.\d+)?)"
     $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
     
     foreach ($line in $fileContent) {
