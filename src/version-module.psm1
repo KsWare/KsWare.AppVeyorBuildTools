@@ -20,23 +20,28 @@ function Read-AppVeyorSettings {
 
 # Extract version format
 function Extract-VersionsFormat {
-    # supported: 1.2.3.{build}; 1.2.{build};  1.2.{build}.0
     Write-Verbose "Extract-VersionsFormat"
-    $versionSegments = $env:APPVEYOR_BUILD_VERSION.Split(".")
+    if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
+    # supported: 1.2.3.{build}; 1.2.{build};  1.2.{build}.0
+    $versionSegments = $env:versionFormat.Split(".")
     $env:VersionSegmentCount = $versionSegments.Count
     Write-Verbose "  VersionSegmentCount: $env:VersionSegmentCount"
     if ($env:VersionSegmentCount -eq 3) {
-        $env:buildVersion = "$($versionSegments[0..2] -join '.')"
-        $env:buildNumber = "0"
+        $env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
+        $env:buildNumber = 0
     } elseif ($env:VersionSegmentCount -eq 4) {
-        $env:buildVersion = "$($versionSegments[0..2] -join '.')"
-        $env:buildNumber = $versionSegments[3]
+        if ($versionSegments[2) -eq "{build}") {
+            $env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
+            $env:buildNumber = 0
+        } else {
+            $env:buildVersion = "$($versionSegments[0..2] -join '.')"
+            $env:buildNumber = $env:APPVEYOR_BUILD_NUMBER
+        }        
     } else {
         Write-Error "ERROR: Unsupported version format. Version must have 3 or 4 segments."
         Exit-AppveyorBuild
     }
 
-    if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
     Write-Verbose "  versionFormat: $env:versionFormat"
     $env:versionFixedSegmentCount = (("$env:versionFormat.{build}" -split ".{build}")[0]).Split(".").Count
     Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"
