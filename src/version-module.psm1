@@ -40,7 +40,6 @@ function Extract-VersionsFormat {
     Write-Verbose "  versionFormat: $env:versionFormat"
     $env:versionFixedSegmentCount = (("$env:versionFormat.{build}" -split ".{build}")[0]).Split(".").Count
     Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"
-    Write-Verbose "TEST1"
     Write-Host "Current version: $env:buildVersion.$env:buildNumber"
 }
 
@@ -100,7 +99,7 @@ function Test-NewVersionIsGreater {
     $currentVersionSegments = $env:buildVersion.Split(".")
     $newVersionSegments = $env:newBuildVersion.Split(".")
 
-    for ($i = 0; $i -lt ([int]$env:versionFixedSegmentCount)+1; $i++) {
+    for ($i = 0; $i -lt ([int]$env:versionFixedSegmentCount); $i++) {
         if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { 
             Write-Verbose ":True"
             return $true 
