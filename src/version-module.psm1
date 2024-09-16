@@ -58,10 +58,9 @@ function Read-VersionFromFile {
         }
     }    	
     if(-not ($newVersion)) {
-        Write-Verbose "$fileContent"
-        Write-Error -Message "`nERROR: No valid version found!" -ErrorAction Stop
-        $fileContent = Get-Content -path "$env:VersionFile" -Raw
-        Write-Error $fileContent
+        #Write-Verbose "$fileContent"
+        $fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5 -Raw
+        Write-Error -Message "`nERROR: No valid version found!`n`n$fileContent" -ErrorAction Stop
         Exit-AppveyorBuild
     }
 
