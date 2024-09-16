@@ -38,13 +38,8 @@ function Extract-VersionsFormat {
 
     if (-not $env:versionFormat) { Write-Error "ERROR: 'versionFormat' is not set in the environment!"; Exit-AppveyorBuild }
     Write-Verbose "  versionFormat: $env:versionFormat"
-    $env:versionFixedSegmentCount = (($env:versionFormat.Split("\.{build}"))[0]).Split('.').Count
-    Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"
-    $parts = $env:versionFormat.Split("\.{build}")
-    Write-Host $parts[0]
-    $segments = ($parts[0]).Split('.')
-    Write-Host $segments.Count
-
+    $env:versionFixedSegmentCount = ("$versionFormat.{build}" -split '\.').IndexOf('{build}')
+    Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"    
     Write-Host "Current version: $env:buildVersion.$env:buildNumber"
 }
 
