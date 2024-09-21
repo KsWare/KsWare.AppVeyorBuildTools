@@ -119,6 +119,12 @@ function ProcessVersion {
 		$env:versionSuffix = "-pre.$env:buildNumber" #TODO overwrites existing suffix!
 		$env:versionHasSuffix = $true
 	}
+
+	Write-Host "Version: $env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"  
+
+	if(-not $env:newBuildVersion) { return }    
+	Update-AppVeyorSettings
+	Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
 }
 
 function Test-NewVersionIsGreater {
@@ -187,10 +193,8 @@ function Update-Version {
 			Write-Host "env:VersionFile: $env:VersionFile"	
 			Read-AppVeyorSettings	
 			Extract-VersionsFormat
-			Read-VersionFromFile            
-			if(-not $env:newBuildVersion) { return }    
-			Update-AppVeyorSettings
-			Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
+			Read-VersionFromFile     
+			ProcessVersion			
 		}
 	
 		Write-Host "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
