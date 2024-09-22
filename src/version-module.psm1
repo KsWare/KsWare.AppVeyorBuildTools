@@ -97,26 +97,33 @@ function Read-VersionFromFile {
 		Write-Host "env:newVersionSuffix: $env:newVersionSuffix"
 	}
 	
-	Write-Host "New version: $env:newVersionPrefixFormat / $env:newVersionPrefix.$env:buildNumber$env:versionSuffix$env:versionMeta"        
+	Write-Host "New version: $env:newVersionPrefixFormat / $env:newVersionPrefix.$env:buildNumber$env:newVersionSuffix"        
 }
 
 function ProcessVersion {
+	Write-Host "ProcessVersion"
 	if($env:newVersionPrefix){
 		if (Test-NewVersionIsGreater) {
+			Write-Host "A"
 			Reset-BuildNumber
 			if ($env:versionFixedSegmentCount -eq 2) {
+				Write-Host "B"
 				$env:versionPrefix = "$env:newVersionPrefix.0"
 			} else {
+				Write-Host "C"
 				$env:versionPrefix = $env:newVersionPrefix
 			}
 		} else {   
+			Write-Host "D"
 			$env:versionPrefix = $env:newVersionPrefix
 		}
 		if($env:newVersionSuffix) {
+			Write-Host "E"
 			$env:versionSuffix = "$newVersionSuffix.$env:buildNumber" #TODO overwrites existing suffix!
 			$env:versionHasSuffix = $env:versionSuffix -ne ""
 		}
 	} else {
+		Write-Host "F"
 		# no new version found
 		# build with existing version and incremented build number
 		$env:versionSuffix = "-pre.$env:buildNumber" #TODO overwrites existing suffix!
