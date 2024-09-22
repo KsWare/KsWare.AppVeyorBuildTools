@@ -124,7 +124,7 @@ function ProcessVersion {
 		$env:versionHasSuffix = $true
 	}
 
-	$env:Version = CalculateVersion
+	CalculateVersion
 	Write-Host "Version: $env:Version"  
 
 	if(-not $env:newVersionPrefix) { return }    
@@ -142,15 +142,15 @@ function CalculateVersion {
 	if ($meta -and $meta -notmatch '^\+') { $meta="+$meta" }
 
 	if ($env:VersionSuffix -and $env:VersionSuffix -ne "") {
-		if ($env:VersionSuffix -match '^\d') {			
-			return "$env:VersionPrefix.$env:VersionSuffix$meta"
-		} elseif ($env:VersionSuffix -match '^-') {
-			return "$env:VersionPrefix$env:VersionSuffix$meta"
+		if ($env:VersionSuffix -match '^-') {
+			$env:Version = "$env:VersionPrefix$env:VersionSuffix$meta"
 		} else {
-			return "$env:VersionPrefix-$env:VersionSuffix$meta"
+			$env:Version = "$env:VersionPrefix-$env:VersionSuffix$meta"
 		}
+		$env:InformationalVersion = $env:Version
 	} else {
-		return "$env:VersionPrefix$meta"
+		$env:Version = "$env:VersionPrefix$meta"
+		$env:InformationalVersion = "$env:VersionPrefix.$env:BuildNumber$meta"
 	}
 }
 
