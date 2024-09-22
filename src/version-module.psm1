@@ -27,14 +27,14 @@ function Extract-VersionsFormat {
 	$env:VersionSegmentCount = $versionSegments.Count
 	Write-Verbose "  VersionSegmentCount: $env:VersionSegmentCount"
 	if ($env:VersionSegmentCount -eq 3) {
-		$env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
+		$env:versionPrefix = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
 		$env:buildNumber = 0
 	} elseif ($env:VersionSegmentCount -eq 4) {
 		if ($versionSegments[2] -eq "{build}") {
-			$env:buildVersion = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
+			$env:versionPrefix = "$($versionSegments[0..1] -join '.').$env:APPVEYOR_BUILD_NUMBER"
 			$env:buildNumber = 0
 		} else {
-			$env:buildVersion = "$($versionSegments[0..2] -join '.')"
+			$env:versionPrefix = "$($versionSegments[0..2] -join '.')"
 			$env:buildNumber = $env:APPVEYOR_BUILD_NUMBER
 		}        
 	} else {
@@ -45,7 +45,7 @@ function Extract-VersionsFormat {
 	Write-Verbose "  versionFormat: $env:versionFormat"
 	$env:versionFixedSegmentCount = (("$env:versionFormat.{build}" -split ".{build}")[0]).Split(".").Count
 	Write-Verbose "  versionFixedSegmentCount: $env:versionFixedSegmentCount"
-	Write-Host "Current version: $env:buildVersion.$env:buildNumber"
+	Write-Host "Current version: $env:versionPrefix.$env:buildNumber"
 }
 
 # Read new version from file
@@ -55,7 +55,7 @@ function Read-VersionFromFile {
 	
 	Write-Host "Read new version from file"
 	$headerPattern = "^\s*(?<level>##?)\s*.*"
-	$versionPattern = "^(\s*(?<level>##?)\s*v?)(?<version>\d+\.\d+(\.\d+)?)(?<suffix>-[^\s]+)?"
+	$versionPattern = "^(\s*(?<level>##?)\s*v?)(?<version>\d+\.\d+(\.\d+)?)(?<suffix>(-\S+)?)"
 	$fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
 
 	$firstFoundHeader = $null
@@ -89,25 +89,25 @@ function Read-VersionFromFile {
 		}
 		Write-Host "env:versionFormat: $env:versionFormat"
 		Write-Host "newVersion: $newVersion"
-		$env:newBuildVersionFormat = $env:versionFormat -replace '.*\.\{build\}', "$newVersion.{build}"
-		$env:newBuildVersion = $newVersion
+		$env:newVersionPrefixFormat = $env:versionFormat -replace '.*\.\{build\}', "$newVersion.{build}"
+		$env:newVersionPrefix = $newVersion
 		$env:newVersionSuffix = $newVersionSuffix
 	}
 	
-	Write-Host "New version: $env:newBuildVersionFormat / $env:newBuildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"        
+	Write-Host "New version: $env:newVersionPrefixFormat / $env:newVersionPrefix.$env:buildNumber$env:versionSuffix$env:versionMeta"        
 }
 
 function ProcessVersion {
-	if($env:newBuildVersion){
+	if($env:newVersionPrefix){
 		if (Test-NewVersionIsGreater) {
 			Reset-BuildNumber
 			if ($env:versionFixedSegmentCount -eq 2) {
-				$env:buildVersion = "$env:newBuildVersion.0"
+				$env:versionPrefix = "$env:newVersionPrefix.0"
 			} else {
-				$env:buildVersion = $env:newBuildVersion
+				$env:versionPrefix = $env:newVersionPrefix
 			}
 		} else {   
-			$env:buildVersion = $env:newBuildVersion
+			$env:versionPrefix = $env:newVersionPrefix
 		}
 		if($env:newVersionSuffix) {
 			$env:versionSuffix = "$newVersionSuffix.$env:buildNumber" #TODO overwrites existing suffix!
@@ -123,7 +123,7 @@ function ProcessVersion {
 	$env:Version = CalculateVersion
 	Write-Host "Version: $env:Version"  
 
-	if(-not $env:newBuildVersion) { return }    
+	if(-not $env:newVersionPrefix) { return }    
 	Update-AppVeyorSettings
 	Update-AppveyorBuild -Version $env:Version
 }
@@ -146,9 +146,9 @@ function CalculateVersion {
 }
 
 function Test-NewVersionIsGreater {
-	Write-Verbose "Test-NewVersionIsCreater $env:buildVersion $env:newBuildVersion"
-	$currentVersionSegments = $env:buildVersion.Split([char[]]('.','+','-'))
-	$newVersionSegments = $env:newBuildVersion.Split([char[]]('.','+','-'))
+	Write-Verbose "Test-NewVersionIsCreater $env:versionPrefix $env:newVersionPrefix"
+	$currentVersionSegments = $env:versionPrefix.Split([char[]]('.','+','-'))
+	$newVersionSegments = $env:newVersionPrefix.Split([char[]]('.','+','-'))
 
 	for ($i = 0; $i -lt ([int]$env:versionFixedSegmentCount); $i++) {
 		if ([int]$newVersionSegments[$i] -gt [int]$currentVersionSegments[$i]) { 
@@ -181,7 +181,7 @@ function Update-AppVeyorSettings {
 	if(-not $global:AppVeyorApiUrl) {throw "global:AppVeyorApiUrl is empty."}
 	if(-not $global:AppVeyorApiRequestHeaders) {throw "global:AppVeyorApiRequestHeaders is empty."}
 
-	$global:AppVeyorSettings.versionFormat = $env:newBuildVersionFormat
+	$global:AppVeyorSettings.versionFormat = $env:newVersionPrefixFormat
 	Write-Host "Build version format: $($global:AppVeyorSettings.versionFormat)"
 	$body = ConvertTo-Json -Depth 10 -InputObject $global:AppVeyorSettings
 	$response = Invoke-RestMethod -Method Put -Uri "$global:AppVeyorApiUrl/projects" -Headers $global:AppVeyorApiRequestHeaders -Body $body
@@ -216,7 +216,7 @@ function Update-Version {
 		}
 	
 		Write-Host "env:APPVEYOR_BUILD_VERSION: $env:APPVEYOR_BUILD_VERSION"
-		Write-Host "env:buildVersion: $env:buildVersion"
+		Write-Host "env:versionPrefix: $env:versionPrefix"
 		Write-Host "env:buildNumber: $env:buildNumber"
 		Write-Host "env:versionSuffix: $env:versionSuffix"
 	}
@@ -252,9 +252,9 @@ Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset
 # $env:APPVEYOR_BUILD_NUMBER    999            999
 # $env:APPVEYOR_BUILD_VERSION   1.0.999        1.0.0
 # $env:useBuildNumberInVersion  true           false
-# $env:newBuildVersion          1.1            1.0.1   (from ChangeLog.md)
-# $env:newBuildVersionFormat    1.1.{build}    1.0.1
-# $env:buildVersion             1.1.0          1.0.1
+# $env:newVersionPrefix          1.1            1.0.1   (from ChangeLog.md)
+# $env:newVersionPrefixFormat    1.1.{build}    1.0.1
+# $env:versionPrefix             1.1.0          1.0.1
 
 # $env:versionSuffix            -beta
 # $env:versionMeta              +20241201120000
