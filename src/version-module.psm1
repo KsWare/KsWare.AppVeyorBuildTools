@@ -68,9 +68,9 @@ function Read-VersionFromFile {
 			if (-not $firstFoundHeaderLevel -or $firstFoundHeaderLevel -ne $currentLevel) {
 				$firstFoundHeaderLevel = $currentLevel
 				if ($line -match $versionPattern) {
-					$newVersion = $matches['version']
 					$newVersionSuffix = $matches['suffix']
-					Write-Host "New version found: '$newVersion$newVersionSuffix' in line '$line'"
+					$newVersion = $matches['version']
+					Write-Host "Data found: '$newVersion' and '$newVersionSuffix' in line '$line'"
 					break
 				}
 			} else {
@@ -92,6 +92,9 @@ function Read-VersionFromFile {
 		$env:newVersionPrefixFormat = $env:versionFormat -replace '.*\.\{build\}', "$newVersion.{build}"
 		$env:newVersionPrefix = $newVersion
 		$env:newVersionSuffix = $newVersionSuffix
+
+		Write-Host "env:newVersionPrefix: $env:newVersionPrefix"
+		Write-Host "env:newVersionSuffix: $env:newVersionSuffix"
 	}
 	
 	Write-Host "New version: $env:newVersionPrefixFormat / $env:newVersionPrefix.$env:buildNumber$env:versionSuffix$env:versionMeta"        
