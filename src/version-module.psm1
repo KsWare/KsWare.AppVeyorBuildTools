@@ -104,26 +104,20 @@ function ProcessVersion {
 	Write-Host "ProcessVersion"
 	if($env:newVersionPrefix){
 		if (Test-NewVersionIsGreater) {
-			Write-Host "A"
 			Reset-BuildNumber
 			if ($env:versionFixedSegmentCount -eq 2) {
-				Write-Host "B"
 				$env:versionPrefix = "$env:newVersionPrefix.0"
 			} else {
-				Write-Host "C"
 				$env:versionPrefix = $env:newVersionPrefix
 			}
-		} else {   
-			Write-Host "D"
+		} else {
 			$env:versionPrefix = $env:newVersionPrefix
 		}
 		if($env:newVersionSuffix) {
-			Write-Host "E"
-			$env:versionSuffix = "$newVersionSuffix.$env:buildNumber" #TODO overwrites existing suffix!
+			$env:versionSuffix = "$env:newVersionSuffix.$env:buildNumber" #TODO overwrites existing suffix!
 			$env:versionHasSuffix = $env:versionSuffix -ne ""
 		}
 	} else {
-		Write-Host "F"
 		# no new version found
 		# build with existing version and incremented build number
 		$env:versionSuffix = "-pre.$env:buildNumber" #TODO overwrites existing suffix!
