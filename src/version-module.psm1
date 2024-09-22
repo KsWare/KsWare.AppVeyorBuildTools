@@ -89,7 +89,7 @@ function Read-VersionFromFile {
 		}
 		Write-Host "env:versionFormat: $env:versionFormat"
 		Write-Host "newVersion: $newVersion"
-		$env:newBuildVersionFormat = $env:versionFormat -replace '^\.\{build\}', "$newVersion.{build}"
+		$env:newBuildVersionFormat = $env:versionFormat -replace '.*(?=\.\{build\})', "$newVersion"
 		$env:newBuildVersion = $newVersion
 		$env:newVersionSuffix = $newVersionSuffix
 	}
