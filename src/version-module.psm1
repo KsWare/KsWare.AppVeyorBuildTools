@@ -163,13 +163,12 @@ function Reset-BuildNumber {
 	Write-Verbose "Reset-BuildNumber"
 	$env:buildNumber = 0
 	$env:nextBuildNumber = 1
-	Send-NextBuildNumber
+	SendNextBuildNumber
 }
 
 # Reset build number to 0 and next build number to 1
-function Send-NextBuildNumber {
-	[CmdletBinding()]param ()
-	if(env:isPR -eq $true) { return }
+function SendNextBuildNumber {
+	if($env:isPR -eq $true) { return }
 	if(-not $env:nextBuildNumber) { return }	
 
 	Write-Verbose "Send-NextBuildNumber"
@@ -247,7 +246,7 @@ function Reset-NextBuildNumber {
 	[CmdletBinding()]param ()
 	Write-Verbose "Reset-NextBuildNumber"
 	$env:nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER
-	Send-NextBuildNumber
+	SendNextBuildNumber
 }
 
 Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset-NextBuildNumber
