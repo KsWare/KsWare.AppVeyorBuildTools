@@ -120,7 +120,7 @@ function ProcessVersion {
 		$env:versionHasSuffix = $true
 	}
 
-	$env:Version = CalculateVersion()
+	$env:Version = CalculateVersion
 	Write-Host "Version: $env:Version"  
 
 	if(-not $env:newBuildVersion) { return }    
