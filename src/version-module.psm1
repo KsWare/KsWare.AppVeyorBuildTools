@@ -52,8 +52,7 @@ function Extract-VersionsFormat {
 function Read-VersionFromFile {
 	Write-Verbose "Read-VersionFromFile"
 	if($env:isPR -eq $true -or -not (Test-Path $env:VersionFile)) { return }
-	
-	Write-Host "Read new version from file"
+
 	$headerPattern = "^\s*(?<level>##?)\s*.*"
 	$versionPattern = "^(\s*(?<level>##?)\s*v?)(?<version>\d+\.\d+(\.\d+)?)(?<suffix>(-\S+)?)"
 	$fileContent = Get-Content -path "$env:VersionFile" -TotalCount 5
@@ -83,25 +82,18 @@ function Read-VersionFromFile {
 		$newVersionSegments = $newVersion.Split(".")    
 		if($newVersionSegments.Count -ne $env:versionFixedSegmentCount) {
 			Write-Verbose "false: $($newVersionSegments.Count) -ne $env:versionFixedSegmentCount"
-			#$env:APPVEYOR_SKIP_FINALIZE_ON_EXIT="true"
 			Write-Error -Message "`nERROR: Unsupported version format! segments: $($newVersionSegments.Count), expected: $env:versionFixedSegmentCount" -ErrorAction Stop
 			Exit-AppveyorBuild
 		}
-		Write-Host "env:versionFormat: $env:versionFormat"
-		Write-Host "newVersion: $newVersion"
 		$env:newVersionPrefixFormat = $env:versionFormat -replace '.*\.\{build\}', "$newVersion.{build}"
 		$env:newVersionPrefix = $newVersion
 		$env:newVersionSuffix = $newVersionSuffix
-
-		Write-Host "env:newVersionPrefix: $env:newVersionPrefix"
-		Write-Host "env:newVersionSuffix: $env:newVersionSuffix"
 	}
 	
 	Write-Host "New version: $env:newVersionPrefixFormat / $env:newVersionPrefix.$env:buildNumber$env:newVersionSuffix"        
 }
 
 function ProcessVersion {
-	Write-Host "ProcessVersion"
 	if($env:newVersionPrefix){
 		if (Test-NewVersionIsGreater) {
 			Reset-BuildNumber
@@ -133,11 +125,6 @@ function ProcessVersion {
 }
 
 function CalculateVersion {
-	Write-Host "CalculateVersion"
-	Write-Host "env:VersionMeta $env:VersionMeta"
-	Write-Host "env:VersionSuffix $env:VersionSuffix"
-	Write-Host "env:VersionPrefix $env:VersionPrefix"
-
 	$meta = $env:VersionMeta
 	if ($meta -and $meta -notmatch '^\+') { $meta="+$meta" }
 
@@ -172,16 +159,27 @@ function Test-NewVersionIsGreater {
 	return $false
 }
 
-# Reset build number to 0 and next build number to 1
 function Reset-BuildNumber {
 	Write-Verbose "Reset-BuildNumber"
+	$env:buildNumber = 0
+	$env:nextBuildNumber = 1
+	Send-NextBuildNumber
+}
+
+# Reset build number to 0 and next build number to 1
+function Send-NextBuildNumber {
+	[CmdletBinding()]param ()
+	if(env:isPR -eq $true) { return }
+	if(-not $env:nextBuildNumber) { return }	
+
+	Write-Verbose "Send-NextBuildNumber"
 	if(-not $global:AppVeyorApiUrl) {throw "env:AppVeyorApiUrl is empty."}
 	if(-not $global:AppVeyorApiRequestHeaders) {throw "env:AppVeyorApiRequestHeaders is empty."}
-
-	$env:buildNumber = 0
-	$json = @{ nextBuildNumber = 1 } | ConvertTo-Json    
+	
+	$json = @{ nextBuildNumber = $env:nextBuildNumber } | ConvertTo-Json    
 	Write-Host "Invoke 'Reset Build Nummer'"
 	Invoke-RestMethod -Method Put "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $global:AppveyorApiRequestHeaders
+	Write-Host "Next build number: $env:nextBuildNumber"
 } 
 
 function Update-AppVeyorSettings {
@@ -248,11 +246,8 @@ function Update-Version {
 function Reset-NextBuildNumber {
 	[CmdletBinding()]param ()
 	Write-Verbose "Reset-NextBuildNumber"
-	if($env:isPR -eq $true) { return } # skip if this is a pull request
-	$build = @{ nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER }
-	$json = $build | ConvertTo-Json    
-	Invoke-RestMethod -Method Put "$global:AppVeyorApiUrl/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/settings/build-number" -Body $json -Headers $global:AppVeyorApiRequestHeaders
-	Write-Host "Next build number: $env:APPVEYOR_BUILD_NUMBER"
+	$env:nextBuildNumber = $env:APPVEYOR_BUILD_NUMBER
+	Send-NextBuildNumber
 }
 
 Export-ModuleMember -Function Update-Version, Update-VersionWithTimestamp, Reset-NextBuildNumber
