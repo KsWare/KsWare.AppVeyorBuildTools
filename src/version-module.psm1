@@ -132,6 +132,11 @@ function ProcessVersion {
 }
 
 function CalculateVersion {
+	Write-Host "CalculateVersion"
+	Write-Host "env:VersionMeta $env:VersionMeta"
+	Write-Host "env:VersionSuffix $env:VersionSuffix"
+	Write-Host "env:VersionPrefix $env:VersionPrefix"
+
 	$meta = $env:VersionMeta
 	if ($meta -and $meta -notmatch '^\+') { $meta="+$meta" }
 
