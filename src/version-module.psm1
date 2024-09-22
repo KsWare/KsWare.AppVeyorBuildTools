@@ -128,7 +128,7 @@ function ProcessVersion {
 	Update-AppveyorBuild -Version $env:Version
 }
 
-function CalculateEnvVersion() {
+function CalculateVersion {
 	$meta = $env:VersionMeta
 	if ($meta -and $meta -notmatch '^\+') { $meta="+$meta" }
 
