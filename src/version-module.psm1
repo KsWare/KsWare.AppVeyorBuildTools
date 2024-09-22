@@ -130,7 +130,7 @@ function ProcessVersion {
 
 function CalculateEnvVersion() {
 	$meta = $env:VersionMeta
-	if ($meta -and $meta -notmatch '^\+') $meta="+$meta"
+	if ($meta -and $meta -notmatch '^\+') { $meta="+$meta" }
 
 	if ($env:VersionSuffix -and $env:VersionSuffix -ne "") {
 		if ($env:VersionSuffix -match '^\d') {			
