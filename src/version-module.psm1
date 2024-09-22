@@ -70,7 +70,7 @@ function Read-VersionFromFile {
 				if ($line -match $versionPattern) {
 					$newVersion = $matches['version']
 					$newVersionSuffix = $matches['suffix']
-					Write-Verbose "New version found: '$newVersion$newVersionSuffix' in line '$line'"
+					Write-Host "New version found: '$newVersion$newVersionSuffix' in line '$line'"
 					break
 				}
 			} else {
@@ -87,11 +87,11 @@ function Read-VersionFromFile {
 			Write-Error -Message "`nERROR: Unsupported version format! segments: $($newVersionSegments.Count), expected: $env:versionFixedSegmentCount" -ErrorAction Stop
 			Exit-AppveyorBuild
 		}
-
+		Write-Host "env:versionFormat: $env:versionFormat"
+		Write-Host "newVersion: $newVersion"
 		$env:newBuildVersionFormat = $env:versionFormat -replace '^\.\{build\}', "$newVersion.{build}"
 		$env:newBuildVersion = $newVersion
 		$env:newVersionSuffix = $newVersionSuffix
-
 	}
 	
 	Write-Host "New version: $env:newBuildVersionFormat / $env:newBuildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"        
@@ -120,11 +120,29 @@ function ProcessVersion {
 		$env:versionHasSuffix = $true
 	}
 
-	Write-Host "Version: $env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"  
+	$env:Version = CalculateVersion()
+	Write-Host "Version: $env:Version"  
 
 	if(-not $env:newBuildVersion) { return }    
 	Update-AppVeyorSettings
-	Update-AppveyorBuild -Version "$env:buildVersion.$env:buildNumber$env:versionSuffix$env:versionMeta"
+	Update-AppveyorBuild -Version $env:Version
+}
+
+function CalculateEnvVersion() {
+	$meta = $env:VersionMeta
+	if ($meta -and $meta -notmatch '^\+') $meta="+$meta"
+
+	if ($env:VersionSuffix -and $env:VersionSuffix -ne "") {
+		if ($env:VersionSuffix -match '^\d') {			
+			return "$env:VersionPrefix.$env:VersionSuffix$meta"
+		} elseif ($env:VersionSuffix -match '^-') {
+			return "$env:VersionPrefix$env:VersionSuffix$meta"
+		} else {
+			return "$env:VersionPrefix-$env:VersionSuffix$meta"
+		}
+	} else {
+		return "$env:VersionPrefix$meta"
+	}
 }
 
 function Test-NewVersionIsGreater {
